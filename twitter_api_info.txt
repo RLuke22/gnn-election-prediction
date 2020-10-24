@@ -1,0 +1,83 @@
+Useful information regarding the Twitter API v1/v2 Recent Tweet Search Endpoint
+
+- RESTful endpoint can deliver up to 100 tweets per request 
+in reverse chronological order
+- "Get historical" mode: requests made with a specific 
+period of interest in mind (no real-time)
+- Rate limits are applied based on which authentication method
+you are using. For example, if you are using OAuth 1.0a User
+Context, you will have one limit per time period for each set
+of users' access tokens; while if you are using OAuth 2.0 Bearer
+token, you will have a separate limit per time period for requests
+made by your app (I believe this is what applies to us)
+- The Bearer Token limit is considered completely separate from the
+User Context limit. (What does this mean?)
+- Recent search and filtered stream share a monthly Tweet cap limit
+of 500000 tweets 
+
+Rate Limits: (per 15 minutes)
+Tweets lookup: 300 (return information about a Tweet or group of Tweets, 
+specified by Tweet ID)
+Users lookup: 300 (return information about  user or group of users,
+specified by User ID)
+Recent Search: 450 (receiving a single search query and 
+responding with matching Tweets)
+Filtered Stream: 450
+
+Information: v1 Recent Search 
+
+Response format: JSON 
+Requests/15min: 450 
+Parameters:
+- q: UTF-8, URL-encoded search query of 500 characters max,
+including operators
+- geocode: returns tweets by users located within a given radius
+of the given lat/long coordinates
+- lang: restricts tweets to a given language 
+- results_type: specified what type of search results you would
+prefer to receive
+    - mixed: include both popular and recent
+    - recent: return only the most recent results 
+    - popular: return only the most popular 
+- count: The number of tweets to return per page. Max of 100,
+defaults to 15
+- until, since_id: time bound of search request
+
+Search strategies
+- ensure all parameters are properly URL encoded 
+- limit you searches to 10 keywords and operators 
+- queries can be limited due to complexity -- if this happend,
+the search API will responds with an error
+
+Search operators
+- The following search queries are possible
+    - search for tweets containing particular text 
+    - search for tweets containing a particular hashtag 
+    - search for tweets mentioning a particular twitter account
+    - search for tweets with a positive/negative attitude
+
+GET functions (with associated rate limits):
+GET statuses/show/:id: returns a single tweet, specified by the id 
+(only 1 tweet per request, 900/15 minutes)
+GET statuses/lookup: return Tweet objects for up to 100 tweets per
+request as specified by comma-separated values passed to id param
+(100 tweets per request, 300/15 min.)
+GET statuses/retweets/:id: Returns a collection of the 100 most recent 
+retweets of the Tweet specified by the id parameter. 
+(100 tweets per request, 300/15 min.)
+GET statuses/retweeters/ids: Returns a collection of up to 100 
+user IDs belonging to users who have retweeted the Tweets
+(100 tweets per request, 300/15 min.)
+GET favorites/list: Returns the 20 most recent Tweets liked by the 
+specified user (20 tweets per request. 75/15 min.)
+GET followers/ids: collection of user IDs for every user following 
+the specified user (N tweets per request, 15 requests/15 min.)
+GET friends/ids:  collection of user IDs for every user the 
+specified user is following  (N tweets per request, 15 requests/15min.)
+GET users/lookup: collection of user IDS user objects for up to 
+100 users per request, as specified by comma-separated values 
+passed to the user_id and/or screen_name parameters
+(100 users per request, 300 /15 min.)
+
+
+
