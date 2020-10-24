@@ -1,14 +1,12 @@
 # gnn-election-prediction
 
 ### Objective
-Use Graph Neural Networks (GNNs) on Twitter data to predict the outcome of the 2020 US Election.
+Use Graph Neural Networks (GNNs) and Twitter data to predict the outcome of the 2020 US Election.
 
 ### Paper List
 
 - Inductive Representation Learning on Large Graphs, Hamilton et al.
   - We plan to make use of the semi-supervised GraphSAGE algorithm 
-- Semi-supervised Classification with Graph Convolutional Networks, Kipf and Welling
-  - We plan to make use of the semi-supervised GCN
 - Characterizing and Detecting Hateful Users on Twitter, Ribeiro et al. 
   - Useful information regarding the extraction of Twitter data using the Twitter API (constructing retweet graph)
 - CS224W: Detection and Analysis of Hateful Users on Twitter, He et al.
