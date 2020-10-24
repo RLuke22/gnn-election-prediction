@@ -51,4 +51,6 @@
 #votehimout, R, -
 #votehimout2020, R, -
 #donald, R, N
-
+#trumplies R, -
+#trumpsupporters, R, +
+#trumpsupporter, R, +
