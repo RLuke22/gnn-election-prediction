@@ -1,56 +1,62 @@
-#biden, D, N
-#bidenharris2020, D, N
-#biden2020, D, N 
-#democrats, D, N 
-#democrat, D, N
-#liberal, D, N
-#joebiden, D, N 
-#kamalaharris, D, N 
-#joe, D, N 
-#unclejoe, D, N
-#voteblue, D, + 
-#bidenharrislandslide2020, D, +
-#bidenharris, D, N 
-#votebluetosaveamerica, D, +
-#joebidenforpresident, D, +
-#bidenforpresident, D, +
-#dnc, D, N
-#sleepyjoe, D, -
-#creepyjoebiden, D, -
-#bluewave, D, N
-#resist, D, N
-#votebluenomatterwho, D, +
-#votebiden, D, +
-#votebiddenharris, D, +
-#votebidenharristosaveamerica, D, +
-#joementum, D, N
-#teambiden, D, N
-#trump, R, N
-#trump2020, R, N
-#donaldtrump, R, N 
-#donaldtrump2020, R, N
-#republicans, R, N 
-#republican, R, N
-#maga, R, +
-#conservative, R, N
-#makeamericagreatagain, R, +
-#gop, R, N
-#kag, R, +
-#keepamericagreat, R, +
-#pence, R, N
-#mikepence, R, N 
-#trumppence, R, N 
-#trumppence2020, R, N
-#fucktrump, R, -
-#dumptrump, R, -
-#trumpsucks, R, -
-#americafirst, R, N
-#notmypresident, R, -
-#draintheswamp, R, N
-#trumptrain, R, N
-#votehimout, R, -
-#votehimout2020, R, -
-#donald, R, N
-#trumplies R, -
-#trumpsupporters, R, +
-#trumpsupporter, R, +
+#biden, D, N, 68.8
+#bidenharris2020, D, N, 73.9
+#biden2020, D, N, 56.7
+#joebiden2020, D, N, 45.2
+#democrats, D, N, 65.2
+#democrat, D, N, 55
+#liberal, D, N, 42
+#joebiden, D, N, 68.2
+#kamalaharris, D, N, 61.3
+#joe, D, N, 40.4
+#unclejoe, D, N, 17.7
+#voteblue, D, +, 57.2
+#uniteblue, D, +, 27.7
+#bidenharrislandslide2020, D, +, 57.4
+#bidenharris, D, N, 63.2
+#votebluetosaveamerica, D, +, 61.5
+#joebidenforpresident, D, +, 19
+#bidenforpresident, D, +, 24
+#sleepyjoe, D, -, 53.3
+#creepyjoebiden, D, -, 40.6
+#creepyjoe, D, -, 41.1
+#bluewave, D, N, 45.3
+#resist, D, N, 62.9
+#theresistance, D, N, 41.9
+#votebluenomatterwho, D, +, 37.1
+#votebiden, D, +, 58.1
+#votebidenharristosaveamerica, D, +, 54.8
+#bidenharris2020tosaveamerica, D, +, 54.6
+#bidenharristosaveamerica, D, +, 56.2
+#joementum, D, N, 30.8
+#teambiden, D, N, 29.2
+#trump, R, N, 79.2
+#trump2020, R, N, 78.5
+#donaldtrump, R, N, 61.5
+#donaldtrump2020, R, N, 19.2
+#republicans, R, N, 52.5
+#republican, R, N, 46.6
+#maga, R, +, 80.6
+#magaa, R, +, 29.3
+#makeamericagreatagain, R, +, 55
+#kag, R, +, 64
+#keepamericagreat, R, +, 56.5
+#pence, R, N, 47.5
+#mikepence, R, N, 40.5
+#trumppence, R, N, 35
+#trumppence2020, R, N, 63.8
+#fucktrump, R, -, 49.9
+#dumptrump, R, -, 51
+#trumpsucks, R, -, 27.5
+#americafirst, R, N, 54.7
+#notmypresident, R, -, 44.7
+#fakepresident, R, -, 40.6
+#draintheswamp, R, +, 52.4
+#trumptrain, R, N, 46.8
+#votehimout, R, -, 57.3
+#votehimout2020, R, -, 57.3
+#donald, R, N, 32.7
+#trumplies, R, -, 48.2
+#bidenlies, D, -, 37
+#trump2020tosaveamerica, R, +, 56.9
+#maga2020, R, +, 64.2
+#redwave, R, +, 38.5
