@@ -1,6 +1,6 @@
-Graph	|V|	|E|	%labelled	avg_degree	avg_clustering
-HatefulUsersOnTwitter	100386	2286592	4.95	45.55	0.0861
-Cora	2708	5429	100	4	0.246175
-Citation	302424	1383590	100	9.15	N/A
-Reddit	232965	57309390	100	492	N/A
-2016Election	92503 / state	N/A			
+Graph,|V|,|E|,%labelled,avg_degree,avg_clustering
+HatefulUsersOnTwitter,100386,2286592,4.95,45.55,0.0861
+Cora,2708,5429,100,4,0.246175
+Citation,302424,1383590,100,9.15,N/A
+Reddit,232965,57309390,100,492,N/A
+2016Election,92503/state,N/A			
