@@ -1,0 +1,37 @@
+Democrat; Total characters: 200
+
+#biden, N
+#biden2020, +
+#bidenharris, N
+#bidenharris2020, +
+#joebiden, N
+#kamalaharris, N
+
+#votebidenharris2020, +
+#votebluetosaveamerica, +
+#votebiden, +
+#voteblue, +
+#bidenharrislandslide2020, +
+#votebluetoendthisnightmare, +
+#sleepyjoe, -
+#neverbiden, -
+
+Republican; Total characters: 161
+
+#trump, N 
+#trump2020, +
+#trumppence, N
+#trumppence2020, + 
+#donaldtrump, N 
+#mikepence, N
+
+#trump2020landslide, +
+#maga, + 
+#maga2020, + 
+#kag, + 
+#voteredtosaveamerica, +
+#fourmoreyears, +
+#votehimout, -
+#dumptrump2020, -
+
+
