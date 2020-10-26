@@ -1,4 +1,4 @@
-Democrat; Total characters: 200
+Democrat; Total characters: ~250
 
 #biden, N
 #biden2020, +
@@ -6,17 +6,17 @@ Democrat; Total characters: 200
 #bidenharris2020, +
 #joebiden, N
 #kamalaharris, N
-
 #votebidenharris2020, +
+#theresistance, +
+#resist, +
 #votebluetosaveamerica, +
 #votebiden, +
 #voteblue, +
 #bidenharrislandslide2020, +
-#votebluetoendthisnightmare, +
 #sleepyjoe, -
 #neverbiden, -
 
-Republican; Total characters: 161
+Republican; Total characters: ~225
 
 #trump, N 
 #trump2020, +
@@ -24,14 +24,14 @@ Republican; Total characters: 161
 #trumppence2020, + 
 #donaldtrump, N 
 #mikepence, N
-
-#trump2020landslide, +
 #maga, + 
 #maga2020, + 
 #kag, + 
 #voteredtosaveamerica, +
-#fourmoreyears, +
+#votetrump, +
+#votered, +
+#trump2020landslide, +
 #votehimout, -
-#dumptrump2020, -
+#dumptrump, -
 
 
