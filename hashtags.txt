@@ -1,4 +1,4 @@
-Democratic Party: 16 N, 5 -, 19 +
+Democratic Party: 15 N, 5 -, 20 +
 #biden, D, N, 68.8
 #bidenharris2020, D, N, 73.9
 #biden2020, D, N, 56.7
@@ -35,12 +35,12 @@ Democratic Party: 16 N, 5 -, 19 +
 #votebidenharristosaveamerica, D, +, 57.3
 #bidenharris2020tosaveamerica, D, +, 54.6
 #bidenharristosaveamerica, D, +, 56.2
-#joementum, D, N, 30.8
+#joementum, D, +, 30.8
 #teambiden, D, N, 29.2
 #teamjoe, D, N, 42.9
 #bidenlies, D, -, 37
 
-Republican Party: 14 N, 8 -, 18 +
+Republican Party: 13 N, 8 -, 19 +
 #trump, R, N, 79.2
 #trump2020, R, N, 78.5
 #trump2020landslide, R, +, 64.9
@@ -66,7 +66,7 @@ Republican Party: 14 N, 8 -, 18 +
 #notmypresident, R, -, 44.7
 #fakepresident, R, -, 40.6
 #draintheswamp, R, +, 52.4
-#trumptrain, R, N, 46.8
+#trumptrain, R, +, 46.8
 #votetrump, R, +, 45.5
 #votehimout, R, -, 57.3
 #votethemout, R, -, 38.7
@@ -76,9 +76,9 @@ Republican Party: 14 N, 8 -, 18 +
 #donald, R, N, 32.7
 #trumplies, R, -, 48.2
 #trump2020tosaveamerica, R, +, 56.9
-#trump2020nowmorethanever, R, +, 54.1
 #redwave, R, +, 38.5
 #votered, R, +, 50.3
 #fourmoreyears, R, +, 57.9
 #trumprally, R, N, 52.8
+#teamtrump, R, +, 40.8
 
