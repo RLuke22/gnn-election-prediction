@@ -133,5 +133,38 @@ Wisconsin: 0.86, Democrat (Historically Swing)
 States to perform inference:
 
 Arizona, Georgia, Iowa, North Carolina, Ohio, Texas, Alaska 
-If possible: New Hampshire, Pennsylvania, Wisconsin, South Carolina
 
+state_populations = {
+    'Arizona':7378490,
+    'Iowa':3179850,
+    'Florida':21993000,
+    'Georgia':10736100,
+    'Alaska':734002,
+    'Ohio':11747700,
+    'Texas':29472300,
+    'NorthCarolina':10611900}
+
+region_populations = {'Arizona': 1, 
+            'Iowa1': 355180, 
+            'Iowa2': 2217945, 
+            'Iowa3': 301418, 
+            'Iowa4': 194926, 
+            'Florida1':21000000,
+            'Florida2':1134638,
+            'Georgia1': 7282574, 
+            'Georgia2': 2500000,
+            'Alaska1': 650000,
+            'Alaska2': 40000,
+            'Alaska3': 20000,
+            'Ohio1': 1206158,
+            'Ohio2': 5075779,
+            'Ohio3': 789777,
+            'Ohio4': 4169657,
+            'Texas1': 3823210,
+            'Texas2': 23286258,
+            'Texas3': 841184,
+            'Texas4': 1675649,
+            'NorthCarolina1': 4725965,
+            'NorthCarolina2': 3973465,
+            'NorthCarolina3': 1226690,
+            'NorthCarolina4': 557021}
