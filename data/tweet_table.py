@@ -80,7 +80,7 @@ geocodes = {'Arizona': '33.8244,-111.5818,146.4mi',
             'NorthCarolina4': '35.5960,-82.4469,26.29mi'}
 
 tweet_count = 5
-for tweet_info in tweepy.Cursor(api.search, q=query, count = tweet_count, result_type = "recent", tweet_mode="extended", geocode=geocodes['Alaska1']).items(tweet_count):
+for tweet_info in tweepy.Cursor(api.search, q=query, count=tweet_count, result_type="recent", tweet_mode="extended", geocode=geocodes['Alaska1'], lang='en').items(tweet_count):
     if 'retweeted_status' in dir(tweet_info):
         tweet=tweet_info.retweeted_status.full_text
     else:
