@@ -129,3 +129,9 @@ Tennessee: 0.96, Republican
 Texas: 0.65, Republican (Swing)
 Utah: 0.96, Republican 
 Wisconsin: 0.86, Democrat (Historically Swing)
+
+States to perform inference:
+
+Arizona, Georgia, Iowa, North Carolina, Ohio, Texas, Alaska 
+If possible: New Hampshire, Pennsylvania, Wisconsin, South Carolina
+
