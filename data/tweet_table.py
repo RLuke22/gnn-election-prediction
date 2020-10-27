@@ -18,7 +18,7 @@ consumer_secret_Q = "O58HHCidMQ8bogw4ofs8hr50V45aYxAG2i9vvqfZBFPXI3zKjM"
 auth = tweepy.AppAuthHandler(consumer_key_Q, consumer_secret_Q)
 api = tweepy.API(auth)
 
-hashtags_dem = ['#biden', 
+""" hashtags_dem = ['#biden', 
                 '#biden2020', 
                 '#bidenharris', 
                 '#bidenharris2020', 
@@ -46,9 +46,16 @@ hashtags_rep = ['#trump',
                 '#votered',
                 '#trump2020landslide',
                 '#votehimout',
-                '#dumptrump']
+                '#dumptrump'] """
 
-hashtags = hashtags_dem + hashtags_rep
+hashtags_d_leaning = ['#biden2020', '#bidenharris2020', '#votebidenharris2020', '#theresistance', '#resist', '#votebluetosaveamerica',
+                        '#votebiden', '#voteblue', '#bidenharrislandslide2020', '#votehimout', '#dumptrump']
+hashtags_r_leaning = ['#trump2020', '#trumppence2020', '#maga', '#maga2020', '#kag', '#voteredtosaveamerica', '#votetrump', 
+                        '#votered', '#trump2020landslide', '#sleepyjoe', '#neverbiden']
+hashtags_n_leaning = ['#biden', '#bidenharris', '#joebiden', '#kamalaharris', '#trump', '#trumppence', '#donaldtrump', '#mikepence']
+
+#hashtags = hashtags_dem + hashtags_rep
+hashtags = hashtags_d_leaning + hashtags_r_leaning + hashtags_n_leaning
 query = ' OR '.join(hashtags)
 
 geocodes = {'Arizona': '33.8244,-111.5818,146.4mi', 
@@ -85,8 +92,23 @@ for tweet_info in tweepy.Cursor(api.search, q=query, count = tweet_count, result
     print(tweet_info.id)
     print(tweet_info.user.id)
     print(tweet_info.created_at)
-    # We can get party and sentiment by creating a dict of hashtags to "(D or R), (N, +, -)"
-    #print([hashtag['text'] for hashtag in tweet_info.entities['hashtags']])
+    
+    tweet_hashtags =  [('#' + hashtag) for hsplit in [h.split('#') for h in tweet.split() if h[0] == '#'] for hashtag in hsplit if hashtag != '']
+    print(tweet_hashtags)
+
+    d_hashes = [h for h in tweet_hashtags if h in hashtags_d_leaning]
+    r_hashes = [h for h in tweet_hashtags if h in hashtags_r_leaning]
+    n_hashes = [h for h in tweet_hashtags if h in hashtags_n_leaning]
+
+    if d_hashes and r_hashes:
+        print('U')
+    elif d_hashes:
+        print('D')
+    elif r_hashes:
+        print('R')
+    elif n_hashes:
+        print('U')
+
     print()
 
                                                             
