@@ -48,48 +48,63 @@ hashtags_rep = ['#trump',
                 '#votehimout',
                 '#dumptrump']
 
-hashtags_d_leaning = ['#biden2020', '#bidenharris2020', '#votebidenharris2020', '#theresistance', '#resist', '#votebluetosaveamerica',
-                        '#votebiden', '#voteblue', '#bidenharrislandslide2020', '#votehimout', '#dumptrump']
-hashtags_r_leaning = ['#trump2020', '#trumppence2020', '#maga', '#maga2020', '#kag', '#voteredtosaveamerica', '#votetrump', 
-                        '#votered', '#trump2020landslide', '#sleepyjoe', '#neverbiden']
+hashtags_d_leaning = ['#biden2020', '#bidenharris2020', '#votebidenharris2020', '#theresistance', '#resist',
+                        '#votebiden', '#voteblue', '#votehimout', '#dumptrump']
+hashtags_r_leaning = hashtags_r_leaning = ['#trump2020', '#trumppence2020', '#maga', '#maga2020', '#kag', '#votetrump', 
+                        '#votered', '#sleepyjoe', '#neverbiden']
 hashtags_n_leaning = ['#biden', '#bidenharris', '#joebiden', '#kamalaharris', '#trump', '#trumppence', '#donaldtrump', '#mikepence']
-
-hashtags = hashtags_dem + hashtags_rep
+hashtags = hashtags_d_leaning + hashtags_r_leaning + hashtags_n_leaning
 query = ' OR '.join(hashtags)
 
-geocodes = {'Arizona': '33.8244,-111.5818,146.4mi', 
-            'Florida1':'27.1984,-83.0723,251.73mi',
-            'Florida2':'29.4065,-86.1746,114mi',
-            'Iowa1': '42.7802,-95.5281,51.26mi', 
-            'Iowa2': '42.0493,-92.8059,100.05mi', 
-            'Iowa3': '41.87931,-90.7568,27.67mi', 
-            'Iowa4': '41.2540,-95.1875,37.76mi', 
-            'Georgia1': '33.5816,-83.9150,78.99mi', 
-            'Georgia2': '32.1667,-82.7974,109.92mi',
-            'Alaska1': '64.3631,-155.8710,440.05mi',
-            'Alaska2': '57.5656,-136.5903,132.45mi',
-            'Alaska3': '55.5065,-132.1958,76.03mi',
-            'Ohio1': '39.1930,-84.6620,8.81mi',
-            'Ohio2': '39.8454,-83.3036,79.47mi',
-            'Ohio3': '41.2866,-83.3382,34.05mi',
-            'Ohio4': '41.3320,-81.6402,56.99mi',
-            'Texas1': '27.7193,-97.6058.50mi,124.43mi',
-            'Texas2': '30.8456,-96.8243 ,187.81mi',
-            'Texas3': '31.8902,-106.4866,8.45mi',
-            'Texas4': '32.4299,-100.4680,147.90mi',
-            'NorthCarolina1': '35.3129,-78.2647,84.16mi',
-            'NorthCarolina2': '35.6695,-80.1571,58.10mi',
-            'NorthCarolina3': '35.7695,-81.5075,38.31mi',
-            'NorthCarolina4': '35.5960,-82.4469,26.29mi'}
+geocodes = {'Arizona0': '33.8244,-111.5818,146.4mi', 
+            'Florida0':'27.1984,-83.0723,251.73mi',
+            'Florida1':'29.4065,-86.1746,114mi',
+            'Iowa0': '42.7802,-95.5281,51.26mi', 
+            'Iowa1': '42.0493,-92.8059,100.05mi', 
+            'Iowa2': '41.87931,-90.7568,27.67mi', 
+            'Iowa3': '41.2540,-95.1875,37.76mi', 
+            'Georgia0': '33.5816,-83.9150,78.99mi', 
+            'Georgia1': '32.1667,-82.7974,109.92mi',
+            'Ohio0': '39.1930,-84.6620,8.81mi',
+            'Ohio1': '39.8454,-83.3036,79.47mi',
+            'Ohio2': '41.2866,-83.3382,34.05mi',
+            'Ohio3': '41.3320,-81.6402,56.99mi',
+            'Texas0': '27.7193,-97.6058.50mi,124.43mi',
+            'Texas1': '30.8456,-96.8243 ,187.81mi',
+            'Texas2': '31.8902,-106.4866,8.45mi',
+            'Texas3': '32.4299,-100.4680,147.90mi',
+            'NorthCarolina0': '35.3129,-78.2647,84.16mi',
+            'NorthCarolina1': '35.6695,-80.1571,58.10mi',
+            'NorthCarolina2': '35.7695,-81.5075,38.31mi',
+            'NorthCarolina3': '35.5960,-82.4469,26.29mi'}
 
-tweet_count = 5
-for tweet_info in tweepy.Cursor(api.search, q=query, count=tweet_count, result_type="recent", tweet_mode="extended", geocode=geocodes['Alaska1'], lang='en').items(tweet_count):
+# #These arrays define a multinomial distribution defining the relative populations of each region (per state)
+# state_region_probs = {'Arizona': [1],
+#                     'Florida': [0.9487, 0.0513],
+#                     'Iowa': [0.1157, 0.7226, 0.0982, 0.06305],
+#                     'Georgia': [0.7444, 0.2556],
+#                     'Ohio': [0.1073, 0.4515, 0.0703, 0.3709],
+#                     'Texas': [0.1290, 0.7860, 0.0284, 0.0566],
+#                     'NorthCarolina': [0.4508, 0.3790, 0.1170, 0.0532]}
+
+tweet_count = 200
+for i, tweet_info in enumerate(tweepy.Cursor(api.search, 
+                                q=query, 
+                                count=tweet_count, 
+                                result_type="recent", 
+                                tweet_mode="extended", 
+                                geocode=geocodes['Iowa3'], 
+                                lang='en',
+                                until='2020-10-21'
+                                ).items(tweet_count)):
+    
     if 'retweeted_status' in dir(tweet_info):
         tweet=tweet_info.retweeted_status.full_text
     else:
         tweet=tweet_info.full_text
 
     print("--------------------------------------------------------------------")
+    print(i)
     print(tweet)
     print(tweet_info.id)
     print(tweet_info.user.id)
