@@ -1,17 +1,24 @@
 import pymongo
 import tweepy
 import inspect
+from tqdm import tqdm
+import numpy as np
 
-client = pymongo.MongoClient("mongodb+srv://Quintillion:TzjTGcE5I6Bu7P9e@twitterdata.wkwqp.mongodb.net/TwitterData?retryWrites=true&w=majority")
-db = client["TwitterData"]
-collection = db["Tweets"]
+# client = pymongo.MongoClient("mongodb+srv://Quintillion:TzjTGcE5I6Bu7P9e@twitterdata.wkwqp.mongodb.net/TwitterData?retryWrites=true&w=majority")
+# db = client["TwitterData"]
+# collection = db["Tweets"]
 
-row = {"tweetid":1, "userid":1, "text":"quinton", "created_at":"8:00", "state":"AZ", "party":"R", "user_processed":1}
+# row = {"tweetid":1, "userid":1, "text":"quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton", "created_at":"8:00", "state":"AZ", "party":"R", "user_processed":1}
 
-x = collection.insert_one(row)
-print(x.inserted_id)
+# for i in tqdm(range(100000)):
+#     if i % 3 == 0:
+#         user_id = 42 
+#     else:
+#         user_id = i
+#     row = {"tweetid":i, "userid":user_id, "text":"quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton", "created_at":"8:00", "state":"AZ", "party":"R", "user_processed":1}
+#     x = collection.insert_one(row)
 
-exit(0)
+# exit(0)
 
 # Luke's keys
 consumer_key_Q = "JZNzXeOD8VMDCroiKFXsXwAdg"
@@ -20,41 +27,64 @@ consumer_secret_Q = "O58HHCidMQ8bogw4ofs8hr50V45aYxAG2i9vvqfZBFPXI3zKjM"
 auth = tweepy.AppAuthHandler(consumer_key_Q, consumer_secret_Q)
 api = tweepy.API(auth)
 
-hashtags_dem = ['#biden', 
-                '#biden2020', 
-                '#bidenharris', 
-                '#bidenharris2020', 
-                '#joebiden', 
-                '#kamalaharris',
-                '#votebidenharris2020',
-                '#theresistance',
-                '#resist',
-                '#votebiden',
-                '#voteblue',
-                '#bidenharrislandslide2020',
-                '#sleepyjoe',
-                '#neverbiden']
+hashtags_d_leaning = [ 
+    '#votebidenharris2020', 
+    '#theresistance', 
+    '#resist', 
+    '#votebiden', 
+    '#voteblue', 
+    '#votehimout', 
+    '#dumptrump'
+]
+hashtags_r_leaning = [ 
+    '#maga', 
+    '#maga2020', 
+    '#kag', 
+    '#votetrump', 
+    '#votered', 
+    '#sleepyjoe', 
+    '#neverbiden'
+]
+hashtags_n_leaning = [
+    '#trump2020', 
+    '#trumppence2020',
+    '#biden2020', 
+    '#bidenharris2020',
+    '#biden', 
+    '#bidenharris', 
+    '#joebiden', 
+    '#kamalaharris', 
+    '#trump', 
+    '#trumppence', 
+    '#donaldtrump', 
+    '#mikepence'
+]
 
-hashtags_rep = ['#trump',
-                '#trump2020',
-                '#trumppence',
-                '#trumppence2020',
-                '#donaldtrump',
-                '#mikepence',
-                '#maga',
-                '#maga2020',
-                '#kag',
-                '#votetrump',
-                '#votered',
-                '#trump2020landslide',
-                '#votehimout',
-                '#dumptrump']
+hashtags_d_leaning = [
+    '#votebluetosaveamerica',
+    '#votebidenharris',
+    '#votebluetoendthisnightmare',
+    '#voteblue2020',
+    '#bidenharrislandslide2020',
+    '#buildbackbetter',
+    '#votebidenharristosaveamerica',
+]
+hashtags_r_leaning = [
+    '#voteredtosaveamerica',
+    '#votetrumppence',
+    '#fourmoreyears',
+    '#votered2020',
+    '#trump2020landslide',
+    '#magaa',
+    '#keepamericagreat'
+]
+hashtags_n_leaning = [
+    '#democrats',
+    '#democrat',
+    '#republicans',
+    '#republican'
+]
 
-hashtags_d_leaning = ['#biden2020', '#bidenharris2020', '#votebidenharris2020', '#theresistance', '#resist',
-                        '#votebiden', '#voteblue', '#votehimout', '#dumptrump']
-hashtags_r_leaning = hashtags_r_leaning = ['#trump2020', '#trumppence2020', '#maga', '#maga2020', '#kag', '#votetrump', 
-                        '#votered', '#sleepyjoe', '#neverbiden']
-hashtags_n_leaning = ['#biden', '#bidenharris', '#joebiden', '#kamalaharris', '#trump', '#trumppence', '#donaldtrump', '#mikepence']
 hashtags = hashtags_d_leaning + hashtags_r_leaning + hashtags_n_leaning
 query = ' OR '.join(hashtags)
 
@@ -95,7 +125,7 @@ for i, tweet_info in enumerate(tweepy.Cursor(api.search,
                                 count=tweet_count, 
                                 result_type="recent", 
                                 tweet_mode="extended", 
-                                geocode=geocodes['Iowa3'], 
+                                geocode=geocodes['Ohio1'], 
                                 lang='en',
                                 until='2020-10-21'
                                 ).items(tweet_count)):

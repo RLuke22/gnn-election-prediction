@@ -1,37 +1,50 @@
-Democrat; Total characters: ~250
+List 1
 
-#biden, N
-#biden2020, +
-#bidenharris, N
-#bidenharris2020, +
-#joebiden, N
-#kamalaharris, N
-#votebidenharris2020, +
-#theresistance, +
-#resist, +
-#votebluetosaveamerica, +
-#votebiden, +
-#voteblue, +
-#bidenharrislandslide2020, +
-#sleepyjoe, -
-#neverbiden, -
+#biden, U
+#biden2020, D
+#bidenharris, U
+#bidenharris2020, D
+#joebiden, U
+#kamalaharris, U
+#votebidenharris2020, D
+#theresistance, D
+#resist, D
+#votebiden, D
+#voteblue, D
+#votehimout, D
+#dumptrump, D
+#trump, U 
+#trump2020, R
+#trumppence, U
+#trumppence2020, R 
+#donaldtrump, U 
+#mikepence, U
+#maga, R 
+#maga2020, R 
+#kag, R
+#votetrump, R
+#votered, R
+#sleepyjoe, R
+#neverbiden, R
 
-Republican; Total characters: ~225
-
-#trump, N 
-#trump2020, +
-#trumppence, N
-#trumppence2020, + 
-#donaldtrump, N 
-#mikepence, N
-#maga, + 
-#maga2020, + 
-#kag, + 
-#voteredtosaveamerica, +
-#votetrump, +
-#votered, +
-#trump2020landslide, +
-#votehimout, -
-#dumptrump, -
+List 2
+#votebluetosaveamerica, D 
+#democrats, U
+#democrat, U
+#votebidenharris, D 
+#votebluetoendthisnightname, D 
+#voteblue2020, D 
+#bidenharrislandslide2020, D
+#buildbackbetter, D
+#votebidenharristosaveamerica, D
+#voteredtosaveamerica, R
+#republicans, U 
+#republican, U 
+#votetrumppence, R 
+#fourmoreyears, R
+#votered2020, R
+#trump2020landslide, R
+#magaa, R
+#keepamericagreat, R
 
 
