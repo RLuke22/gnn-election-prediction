@@ -160,7 +160,7 @@ class TweetDataEngine():
         start_timestamp = datetime(start_year, start_month, start_day)
 
         if tweet_timestamp < start_timestamp:
-            print("\nTweet posted at {}, which is before {}. Early stopping...".format(str(tweet_timestamp), str(start_timestamp)))
+            #print("\nTweet posted at {}, which is before {}. Early stopping...".format(str(tweet_timestamp), str(start_timestamp)))
             return True
         else:
             return False
