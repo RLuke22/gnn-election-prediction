@@ -3,10 +3,10 @@ import sys
 import os 
 import re
 from datetime import datetime
+import csv
 
 import pymongo
 import tweepy
-import numpy as np
 
 class TweetDataEngine():
     def __init__(self, args):
@@ -24,16 +24,14 @@ class TweetDataEngine():
             self.consumer_key_Q = "JZNzXeOD8VMDCroiKFXsXwAdg"
             self.consumer_secret_Q = "O58HHCidMQ8bogw4ofs8hr50V45aYxAG2i9vvqfZBFPXI3zKjM"
 
-            self.backup_file = 'lrowe_data.csv'
+            self.backup_file = '../../lrowe_data.csv'
         elif self.user == 'qyong':
             self.consumer_key_Q = "DT3XJxLbG9gSAExLTnw8Ya8wy"
             self.consumer_secret_Q = "9zhg6sRhqaBBgzYyBuoaohPH6WLpYEMWkg3S0koAhr50dfZQ1q"
 
-            self.backup_file = 'qyong_data.csv' 
+            self.backup_file = '../../qyong_data.csv' 
 
-        if not os.path.exists(self.backup_file):
-            os.mkdir(self.backup_file)
-
+        self.fieldnames = ['tweet_id', 'user_id', 'text', 'state', 'party', 'in_graph', 'retweet_user_id']
         self.api = tweepy.API(tweepy.AppAuthHandler(self.consumer_key_Q, self.consumer_secret_Q), wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
         
         if self.hashtag_list == 1:
@@ -152,7 +150,7 @@ class TweetDataEngine():
     def query(self):
         return ' OR '.join(self.hashtags)
 
-    def one_day_passed(self, tweet_timestamp):
+    def time_exceeded(self, tweet_timestamp):
         start_year = int(self.start_time[0:4])
         start_month = int(self.start_time[5:7])
         start_day = int(self.start_time[8:10])
@@ -192,9 +190,8 @@ class TweetDataEngine():
 
         for region in self.geocodes.keys():
             tweet_count = self.region_tweet_counts[region]
-            tweet_count = 10
             # for logging
-            print('\n{}: '.format(region), end='')
+            print('{}: '.format(region), end='')
 
             for i, tweet_info in enumerate(tweepy.Cursor(self.api.search, 
                                             q=self.query(), 
@@ -207,12 +204,11 @@ class TweetDataEngine():
                                             ).items(tweet_count)):
 
                 # for logging
-                #print('{}-'.format(i), end='')
-                print(str(tweet_info.created_at))
+                print('{}-'.format(i), end='')
 
                 # early stopping checks
                 # tweets retrieved in reverse chronological order
-                if self.one_day_passed(tweet_info.created_at):
+                if self.time_exceeded(tweet_info.created_at):
                     break
                 # check if already in database
                 if collection.find_one({"tweetid" : tweet_info.id}):
@@ -238,7 +234,12 @@ class TweetDataEngine():
                     "in_graph":0,
                     "retweet_user_id": original_tweet_user_id
                 }
+                with open(self.backup_file, 'a+') as csvfile:
+                    writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
+                    writer.writerow(row)
+                
                 collection.insert_one(row)
+
             print()
 
 def read_args(args):
