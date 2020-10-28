@@ -6,10 +6,12 @@ client = pymongo.MongoClient("mongodb+srv://Quintillion:TzjTGcE5I6Bu7P9e@twitter
 db = client["TwitterData"]
 collection = db["Tweets"]
 
-""" row = {"tweetid":1, "userid":1, "text":"quinton", "created_at":"8:00", "geotag":"somewhere", "party":"R", "sentiment":"N"}
+row = {"tweetid":1, "userid":1, "text":"quinton", "created_at":"8:00", "state":"AZ", "party":"R", "user_processed":1}
 
 x = collection.insert_one(row)
-print(x.inserted_id) """
+print(x.inserted_id)
+
+exit(0)
 
 # Luke's keys
 consumer_key_Q = "JZNzXeOD8VMDCroiKFXsXwAdg"
