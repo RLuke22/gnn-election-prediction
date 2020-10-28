@@ -8,6 +8,8 @@ import csv
 import pymongo
 import tweepy
 
+from tqdm import tqdm
+
 class TweetDataEngine():
     def __init__(self, args):
         super(TweetDataEngine, self).__init__()
@@ -191,9 +193,9 @@ class TweetDataEngine():
         for region in self.geocodes.keys():
             tweet_count = self.region_tweet_counts[region]
             # for logging
-            print('{}: '.format(region), end='')
+            print('Region: {}'.format(region))
 
-            for i, tweet_info in enumerate(tweepy.Cursor(self.api.search, 
+            for i, tweet_info in tqdm(enumerate(tweepy.Cursor(self.api.search, 
                                             q=self.query(), 
                                             count=tweet_count, 
                                             result_type="recent", 
@@ -201,10 +203,10 @@ class TweetDataEngine():
                                             geocode=self.geocodes[region], 
                                             lang='en',
                                             until=self.end_time
-                                            ).items(tweet_count)):
+                                            ).items(tweet_count))):
 
-                # for logging
-                print('{}-'.format(i), end='')
+                # # for logging
+                # print('{}-'.format(i), end='')
 
                 # early stopping checks
                 # tweets retrieved in reverse chronological order
