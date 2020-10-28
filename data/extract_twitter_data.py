@@ -213,7 +213,7 @@ class TweetDataEngine():
                 if self.time_exceeded(tweet_info.created_at):
                     break
                 # check if already in database
-                if collection.find_one({"tweetid" : tweet_info.id}):
+                if collection.find_one({"tweet_id" : tweet_info.id}):
                     continue
 
                 if 'retweeted_status' in dir(tweet_info):
