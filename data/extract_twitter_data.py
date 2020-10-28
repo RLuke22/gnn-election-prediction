@@ -1,6 +1,8 @@
 import argparse
 import sys 
 import os 
+import re
+from datetime import datetime
 
 import pymongo
 import tweepy
@@ -11,6 +13,7 @@ class TweetDataEngine():
         super(TweetDataEngine, self).__init__()
 
         self.user = args.user
+        self.start_time = args.start_time
         self.end_time = args.end_time
         self.hashtag_list = args.hashtag_list
 
@@ -31,8 +34,7 @@ class TweetDataEngine():
         if not os.path.exists(self.backup_file):
             os.mkdir(self.backup_file)
 
-        self.api = tweepy.API(tweepy.AppAuthHandler(self.consumer_key_Q, self.consumer_secret_Q))
-
+        self.api = tweepy.API(tweepy.AppAuthHandler(self.consumer_key_Q, self.consumer_secret_Q), wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
         
         if self.hashtag_list == 1:
             self.hashtags_d_leaning = [ 
@@ -92,6 +94,8 @@ class TweetDataEngine():
                 '#republicans',
                 '#republican'
             ]
+
+        self.hashtags = self.hashtags_d_leaning + self.hashtags_r_leaning + self.hashtags_n_leaning
     
         self.geocodes = {
                 'Arizona0': '33.8244,-111.5818,146.4mi', 
@@ -107,8 +111,8 @@ class TweetDataEngine():
                 'Ohio1': '39.8454,-83.3036,79.47mi',
                 'Ohio2': '41.2866,-83.3382,34.05mi',
                 'Ohio3': '41.3320,-81.6402,56.99mi',
-                'Texas0': '27.7193,-97.6058.50mi,124.43mi',
-                'Texas1': '30.8456,-96.8243 ,187.81mi',
+                'Texas0': '27.7193,-97.6058,124.43mi',
+                'Texas1': '30.8456,-96.8243,187.81mi',
                 'Texas2': '31.8902,-106.4866,8.45mi',
                 'Texas3': '32.4299,-100.4680,147.90mi',
                 'NorthCarolina0': '35.3129,-78.2647,84.16mi',
@@ -146,19 +150,102 @@ class TweetDataEngine():
         }
 
     def query(self):
-        hashtags = self.hashtags_d_leaning + self.hashtags_r_leaning + self.hashtags_n_leaning
-        return ' OR '.join(hashtags)
+        return ' OR '.join(self.hashtags)
+
+    def one_day_passed(self, tweet_timestamp):
+        start_year = int(self.start_time[0:4])
+        start_month = int(self.start_time[5:7])
+        start_day = int(self.start_time[8:10])
+
+        start_timestamp = datetime(start_year, start_month, start_day)
+
+        if tweet_timestamp < start_timestamp:
+            print("\nTweet posted at {}, which is before {}. Early stopping...".format(str(tweet_timestamp), str(start_timestamp)))
+            return True
+        else:
+            return False
+
+    def get_party(self, tweet):
+        tweet_hashtags = []
+        for ht in self.hashtags:
+            if ht in tweet.lower():
+                tweet_hashtags.append(ht)
+
+        d_hashes = [h for h in tweet_hashtags if h.lower() in self.hashtags_d_leaning]
+        r_hashes = [h for h in tweet_hashtags if h.lower() in self.hashtags_r_leaning]
+        n_hashes = [h for h in tweet_hashtags if h.lower() in self.hashtags_n_leaning]
+
+        if d_hashes and r_hashes:
+            party = 'U'
+        elif d_hashes:
+            party = 'D'
+        elif r_hashes:
+            party = 'R'
+        else:
+            party = 'U'
+
+        return party
+        
 
     def extract_data(self):
+        collection = self.db['Tweets']
 
-        print(len(self.query()))
-        
-        return None
+        for region in self.geocodes.keys():
+            tweet_count = self.region_tweet_counts[region]
+            tweet_count = 10
+            # for logging
+            print('\n{}: '.format(region), end='')
+
+            for i, tweet_info in enumerate(tweepy.Cursor(self.api.search, 
+                                            q=self.query(), 
+                                            count=tweet_count, 
+                                            result_type="recent", 
+                                            tweet_mode="extended", 
+                                            geocode=self.geocodes[region], 
+                                            lang='en',
+                                            until=self.end_time
+                                            ).items(tweet_count)):
+
+                # for logging
+                #print('{}-'.format(i), end='')
+                print(str(tweet_info.created_at))
+
+                # early stopping checks
+                # tweets retrieved in reverse chronological order
+                if self.one_day_passed(tweet_info.created_at):
+                    break
+                # check if already in database
+                if collection.find_one({"tweetid" : tweet_info.id}):
+                    continue
+
+                if 'retweeted_status' in dir(tweet_info):
+                    tweet=tweet_info.retweeted_status.full_text
+                    original_tweet_user_id = tweet_info.retweeted_status.user.id
+                else:
+                    tweet=tweet_info.full_text
+                    original_tweet_user_id = -1
+
+                # remove unnecessary URLs
+                tweet = re.sub(r"http\S+", "", tweet)
+                party = self.get_party(tweet)
+
+                row = {
+                    "tweet_id":tweet_info.id, 
+                    "user_id":tweet_info.user.id, 
+                    "text":tweet, 
+                    "state":region[:-1], 
+                    "party":party, 
+                    "in_graph":0,
+                    "retweet_user_id": original_tweet_user_id
+                }
+                collection.insert_one(row)
+            print()
 
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--user', dest='user', type=str, default='lrowe', help='lrowe or qyong')
     parser.add_argument('--end-time', dest='end_time', type=str, default='2020-11-03', help='YYYY-MM-DD')
+    parser.add_argument('--start-time', dest='start_time', type=str, default='2020-11-02', help='YYYY-MM-DD')
     parser.add_argument('--hashtag-list', dest='hashtag_list', type=int, default=1, help='1,2')
     
     return parser.parse_args(args)
@@ -169,6 +256,7 @@ if __name__ == '__main__':
     print("Polling configurations")
     print("_____________________")
     print("User: ", args.user)
+    print("Start Time: ", args.start_time)
     print("End Time: ", args.end_time)
     print("Hashtag List: ", args.hashtag_list)
     print()

@@ -3,14 +3,15 @@ import tweepy
 import inspect
 from tqdm import tqdm
 import numpy as np
+import re
 
-# client = pymongo.MongoClient("mongodb+srv://Quintillion:TzjTGcE5I6Bu7P9e@twitterdata.wkwqp.mongodb.net/TwitterData?retryWrites=true&w=majority")
-# db = client["TwitterData"]
-# collection = db["Tweets"]
+client = pymongo.MongoClient("mongodb+srv://Quintillion:TzjTGcE5I6Bu7P9e@twitterdata.wkwqp.mongodb.net/TwitterData?retryWrites=true&w=majority")
+db = client["TwitterData"]
+collection = db["Tweets"]
 
 # row = {"tweetid":1, "userid":1, "text":"quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton quinton", "created_at":"8:00", "state":"AZ", "party":"R", "user_processed":1}
 
-# for i in tqdm(range(100000)):
+# for i in tqdm(range(1)):
 #     if i % 3 == 0:
 #         user_id = 42 
 #     else:
@@ -20,12 +21,17 @@ import numpy as np
 
 # exit(0)
 
+# if collection.find_one({"tweetid" : 20}):
+#     print("Yo")
+
+# exit(0)
+
 # Luke's keys
 consumer_key_Q = "JZNzXeOD8VMDCroiKFXsXwAdg"
 consumer_secret_Q = "O58HHCidMQ8bogw4ofs8hr50V45aYxAG2i9vvqfZBFPXI3zKjM"
 
 auth = tweepy.AppAuthHandler(consumer_key_Q, consumer_secret_Q)
-api = tweepy.API(auth)
+api = tweepy.API(auth, wait_on_rate_limit=True)
 
 hashtags_d_leaning = [ 
     '#votebidenharris2020', 
@@ -101,8 +107,8 @@ geocodes = {'Arizona0': '33.8244,-111.5818,146.4mi',
             'Ohio1': '39.8454,-83.3036,79.47mi',
             'Ohio2': '41.2866,-83.3382,34.05mi',
             'Ohio3': '41.3320,-81.6402,56.99mi',
-            'Texas0': '27.7193,-97.6058.50mi,124.43mi',
-            'Texas1': '30.8456,-96.8243 ,187.81mi',
+            'Texas0': '27.7193,-97.6058.50,124.43mi',
+            'Texas1': '30.8456,-96.8243,187.81mi',
             'Texas2': '31.8902,-106.4866,8.45mi',
             'Texas3': '32.4299,-100.4680,147.90mi',
             'NorthCarolina0': '35.3129,-78.2647,84.16mi',
@@ -119,33 +125,40 @@ geocodes = {'Arizona0': '33.8244,-111.5818,146.4mi',
 #                     'Texas': [0.1290, 0.7860, 0.0284, 0.0566],
 #                     'NorthCarolina': [0.4508, 0.3790, 0.1170, 0.0532]}
 
-tweet_count = 200
+tweet_count = 100
+print("Finding tweets:")
 for i, tweet_info in enumerate(tweepy.Cursor(api.search, 
                                 q=query, 
                                 count=tweet_count, 
                                 result_type="recent", 
                                 tweet_mode="extended", 
-                                geocode=geocodes['Ohio1'], 
+                                geocode=geocodes['Florida0'], 
                                 lang='en',
-                                until='2020-10-21'
                                 ).items(tweet_count)):
     
     if 'retweeted_status' in dir(tweet_info):
         tweet=tweet_info.retweeted_status.full_text
+        print("Original user: ", tweet_info.retweeted_status.user.id)
     else:
         tweet=tweet_info.full_text
+    tweet = re.sub(r"http\S+", "", tweet)
 
     print("--------------------------------------------------------------------")
     print(i)
     print(tweet)
     print(tweet_info.id)
     print(tweet_info.user.id)
-    print(tweet_info.created_at)
+    print(tweet_info.created_at)    
     
-    # for h in tweet.split() where h[0] is '#'
-    #     for hashtag in h.split('#') // this is to deal with the #something#something cases
-    #         add '#' + hashtag to list if hashtag is not empty
-    tweet_hashtags =  [('#' + hashtag) for hsplit in [h.split('#') for h in tweet.split() if h[0] == '#'] for hashtag in hsplit if hashtag != '']
+    # # for h in tweet.split() where h[0] is '#'
+    # #     for hashtag in h.split('#') // this is to deal with the #something#something cases
+    # #         add '#' + hashtag to list if hashtag is not empty
+    # tweet_hashtags =  [('#' + hashtag) for hsplit in [h.split('#') for h in tweet.split() if h[0] == '#'] for hashtag in hsplit if hashtag != '']
+    # print(tweet_hashtags)
+    tweet_hashtags = []
+    for ht in hashtags:
+        if ht in tweet.lower():
+            tweet_hashtags.append(ht)
     print(tweet_hashtags)
 
     d_hashes = [h for h in tweet_hashtags if h.lower() in hashtags_d_leaning]
