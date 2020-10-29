@@ -190,12 +190,12 @@ class TweetDataEngine():
     def extract_data(self):
         collection = self.db['Tweets']
 
-        for region in self.geocodes.keys():
+        print("Extracting tweets...")
+        for region in ['Iowa1']:#self.geocodes.keys():
             tweet_count = self.region_tweet_counts[region]
             # for logging
-            print('Region: {}'.format(region))
 
-            for i, tweet_info in tqdm(enumerate(tweepy.Cursor(self.api.search, 
+            for i, tweet_info in enumerate(tweepy.Cursor(self.api.search, 
                                             q=self.query(), 
                                             count=tweet_count, 
                                             result_type="recent", 
@@ -203,7 +203,7 @@ class TweetDataEngine():
                                             geocode=self.geocodes[region], 
                                             lang='en',
                                             until=self.end_time
-                                            ).items(tweet_count))):
+                                            ).items(tweet_count)):
 
                 # # for logging
                 # print('{}-'.format(i), end='')
@@ -241,8 +241,8 @@ class TweetDataEngine():
                     writer.writerow(row)
                 
                 collection.insert_one(row)
-
-            print()
+            
+            print('Region: {}, Tweets: {}'.format(region,i))
 
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)
