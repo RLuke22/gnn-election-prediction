@@ -1,7 +1,7 @@
 Democratic Accounts
-- @JoeBiden 11.6M
-- @KamalaHarris
-- @SenKamalaHarris
+- @JoeBiden 11.6M *
+- @KamalaHarris 6.9M
+- @SenKamalaHarris 2.6M
 - @TeamJoe 162.4K
 - @joncoopertweets 620K
 - @BernieSanders
@@ -27,7 +27,7 @@ Democratic Accounts
 - @CNNPolitics
 - @CNN
 - @donlemon 1.1M
-- @jaketapper
+- @jaketapper 2.7M
 - @andersoncooper
 - @wolfblitzer
 - @ChrisCuomo
@@ -38,20 +38,20 @@ Democratic Accounts
 Republican Accounts
 
 - @FoxNews
-- @TuckerCarlson 4.2M
+- @TuckerCarlson 4.2M *
 - @realDonaldTrump 87.3M
 - @DonaldJTrumpJr 5.9M
 - @IvankaTrump 9.7M
-- @Mike_Pence 5.4M
+- @Mike_Pence 5.4M *
 - @KellyannePolls 3.5M
-- @seanhannity 5.3M
+- @seanhannity 5.3M *
 - @seanspicer
 - @RealJamesWoods 2.6M
 - @GOPChairwoman
 - @senatemajldr 1.9M
 - @GOPLeader
-- @NRA 891K
-- @SaraCarterDC
+- @NRA 891K *
+- @SaraCarterDC 
 - @GOP 2.5M
 - @michellemalkin 2.2M
 - @AppSame
@@ -59,7 +59,7 @@ Republican Accounts
 - @SenateGOP 1.1M
 - @SenTedCruz
 - @SecPompeo
-- @TeamTrump 2.3M
+- @TeamTrump 2.3M *
 - @LouDobbs 2.2M
 - @EricTrump
 - @DanScavino 1M
