@@ -37,7 +37,7 @@ class TwitterFollowerDataEngine():
             }
         
         self.api = tweepy.API(tweepy.AppAuthHandler(self.consumer_key_Q, self.consumer_secret_Q))
-        self.fieldnames = ['user_id', 'political_leaning']
+        self.fieldnames = ['user_id', 'party']
 
     def extract_followers(self):
 
@@ -60,7 +60,7 @@ class TwitterFollowerDataEngine():
 
                         writer.writerow({
                             'user_id': user_id,
-                            'political_leaning': self.twitter_accounts[t_account]
+                            'party': self.twitter_accounts[t_account]
                         })
         
         print("Done!")
@@ -76,7 +76,7 @@ class TwitterFollowerDataEngine():
         #     for user_id in page:
         #         writer.writerow({
         #             'user_id': user_id,
-        #             'political_leaning': self.twitter_accounts[t_account]
+        #             'party': self.twitter_accounts[t_account]
         #         })
         #     end = time.time()
         #     print("{}s".format(end - start))
