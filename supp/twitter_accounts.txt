@@ -1,32 +1,32 @@
 Democratic Accounts
-- @JoeBiden
+- @JoeBiden 11.6M
 - @KamalaHarris
 - @SenKamalaHarris
-- @TeamJoe
-- @joncoopertweets
+- @TeamJoe 162.4K
+- @joncoopertweets 620K
 - @BernieSanders
 - @MarkRuffalo
 - @ewarren
 - @PeteButtigieg
 - @DNC
-- @TheDemocrats
+- @TheDemocrats 118.6K
 - @BarackObama
 - @AOC
 - @MichelleObama
 - @TomPerez
-- @SpeakerPelosi
+- @SpeakerPelosi 5.5M
 - @LeaderHoyer
 - @SenSchumer
-- @SenateDems
-- @HouseDemocrats
+- @SenateDems 1M
+- @HouseDemocrats 1.1M
 - @Trevornoah
 - @jimmykimmel
-- @DearAuntCrabby
+- @DearAuntCrabby 276.4K
 - @HamillHimself
 - @UniteBlue
 - @CNNPolitics
 - @CNN
-- @donlemon
+- @donlemon 1.1M
 - @jaketapper
 - @andersoncooper
 - @wolfblitzer
@@ -38,32 +38,32 @@ Democratic Accounts
 Republican Accounts
 
 - @FoxNews
-- @TuckerCarlson
-- @realDonaldTrump
-- @DonaldJTrumpJr
-- @IvankaTrump
-- @Mike_Pence
-- @KellyannePolls
-- @seanhannity
+- @TuckerCarlson 4.2M
+- @realDonaldTrump 87.3M
+- @DonaldJTrumpJr 5.9M
+- @IvankaTrump 9.7M
+- @Mike_Pence 5.4M
+- @KellyannePolls 3.5M
+- @seanhannity 5.3M
 - @seanspicer
-- @RealJamesWoods
+- @RealJamesWoods 2.6M
 - @GOPChairwoman
-- @senatemajldr
+- @senatemajldr 1.9M
 - @GOPLeader
-- @NRA
+- @NRA 891K
 - @SaraCarterDC
-- @GOP
-- @michellemalkin
+- @GOP 2.5M
+- @michellemalkin 2.2M
 - @AppSame
-- @HouseGOP
-- @SenateGOP
+- @HouseGOP 1M
+- @SenateGOP 1.1M
 - @SenTedCruz
 - @SecPompeo
-- @TeamTrump
-- @LouDobbs
+- @TeamTrump 2.3M
+- @LouDobbs 2.2M
 - @EricTrump
-- @DanScavino
-- @TomiLahren
+- @DanScavino 1M
+- @TomiLahren 1.7M
 - @IngrahamAngle
 - @RudyGiuliani
 - @SarahHuckabee
