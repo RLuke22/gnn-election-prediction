@@ -193,6 +193,12 @@ class TweetDataEngine():
                 'NorthCarolina3': 223
         }
 
+        self.neutral_label = 'U'
+        if self.hashtag_list == 4:
+            self.neutral_label = 'UU'
+        self.democrat_label = 'D'
+        self.republican_label = 'R'
+
     def query(self):
         return ' OR '.join(self.hashtags)
 
@@ -220,13 +226,13 @@ class TweetDataEngine():
         n_hashes = [h for h in tweet_hashtags if h.lower() in self.hashtags_n_leaning]
 
         if d_hashes and r_hashes:
-            party = 'U'
+            party = self.neutral_label
         elif d_hashes:
-            party = 'D'
+            party = self.democrat_label
         elif r_hashes:
-            party = 'R'
+            party = self.republican_label
         else:
-            party = 'U'
+            party = self.neutral_label
 
         return party
         
@@ -280,6 +286,7 @@ class TweetDataEngine():
                     "in_graph":0,
                     "retweet_user_id": original_tweet_user_id
                 }
+                
                 with open(self.backup_file, 'a+') as csvfile:
                     writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
                     writer.writerow(row)
