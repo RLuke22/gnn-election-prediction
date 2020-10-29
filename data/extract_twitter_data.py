@@ -69,7 +69,7 @@ class TweetDataEngine():
                 '#donaldtrump', 
                 '#mikepence'
             ]
-        else:
+        elif self.hashtag_list == 2:
             self.hashtags_d_leaning = [
                 '#votebluetosaveamerica',
                 '#votebidenharris',
@@ -94,9 +94,34 @@ class TweetDataEngine():
                 '#republicans',
                 '#republican'
             ]
+        elif self.hashtag_list == 3:
+            self.hashtags_d_leaning = [
+                '#votebluenomatterwho',
+                '#bidenharris2020landslide',
+                '#bluewave',
+                '#bluewave2020',
+                '#bidenharristosaveamerica',
+                '#joebiden2020',
+                '#votehimout2020',
+            ]
+            self.hashtags_r_leaning = [
+                '#trump2020nowmorethanever',
+                '#donaldtrump2020',
+                '#makeamericagreatagain',
+                '#kag2020',
+                '#trumptrain',
+                '#voteredtosaveamerica2020',
+                '#trump2020tosaveamerica'
+            ]
+            self.hashtags_n_leaning = [
+                '#hunterbiden',
+                '#teamtrump',
+                '#teambiden',
+                '#americafirst'
+            ]
 
         self.hashtags = self.hashtags_d_leaning + self.hashtags_r_leaning + self.hashtags_n_leaning
-    
+        
         self.geocodes = {
                 'Arizona0': '33.8244,-111.5818,146.4mi', 
                 'Florida0':'27.1984,-83.0723,251.73mi',
