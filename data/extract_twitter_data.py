@@ -22,6 +22,11 @@ class TweetDataEngine():
         self.client = pymongo.MongoClient("mongodb+srv://Quintillion:TzjTGcE5I6Bu7P9e@twitterdata.wkwqp.mongodb.net/TwitterData?retryWrites=true&w=majority")
         self.db = self.client['TwitterData']
 
+        # collection = self.db['Tweets']
+        # c = collection.distinct("user_id",{"party": "R", "state": "Georgia"})
+        # print(len(c))
+        # exit(0)
+
         if self.user == 'lrowe':
             self.consumer_key_Q = "JZNzXeOD8VMDCroiKFXsXwAdg"
             self.consumer_secret_Q = "O58HHCidMQ8bogw4ofs8hr50V45aYxAG2i9vvqfZBFPXI3zKjM"
@@ -118,6 +123,20 @@ class TweetDataEngine():
                 '#teamtrump',
                 '#teambiden',
                 '#americafirst'
+            ]
+
+        elif self.hashtag_list == 4:
+            self.hashtags_d_leaning = [
+            ]
+            self.hashtags_r_leaning = [
+            ]
+            self.hashtags_n_leaning = [
+                'Biden',
+                'Trump',
+                'Democrat',
+                'Republican',
+                'Democrats',
+                'Republicans'
             ]
 
         self.hashtags = self.hashtags_d_leaning + self.hashtags_r_leaning + self.hashtags_n_leaning
