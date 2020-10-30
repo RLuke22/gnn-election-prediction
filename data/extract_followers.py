@@ -41,10 +41,10 @@ class TwitterFollowerDataEngine():
 
     def extract_followers(self):
 
-        print("Extracting followers...")
         count = 0
 
         for t_account in self.twitter_accounts.keys():
+            print("Extracting followers of @{}".format(t_account))
             for page in tweepy.Cursor(self.api.followers_ids, screen_name=t_account).pages():
                 time.sleep(60)
 
