@@ -242,6 +242,7 @@ class TweetDataEngine():
 
         print("Extracting tweets...")
         for region in self.geocodes.keys():
+
             tweet_count = self.region_tweet_counts[region]
             # for logging
 
