@@ -19,8 +19,7 @@ class TwitterFollowerDataEngine():
 
             self.backup_file = '../../lrowe_followers.csv'
 
-            self.twitter_accounts = {
-                'Mike_Pence': 'R',
+            self.twitter_accounts = { #'Mike_Pence': 'R',
                 'seanhannity': 'R',
                 'TeamTrump': 'R',
                 'NRA': 'R'
