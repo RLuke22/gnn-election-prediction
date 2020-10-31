@@ -311,7 +311,7 @@ class TweetDataEngine():
                     "tweet_id":tweet_info.id, 
                     "user_id":tweet_info.user.id, 
                     "text":tweet, 
-                    "state":region[:-1], 
+                    "state":region, 
                     "party":party, 
                     "in_graph":0,
                     "retweet_user_id": original_tweet_user_id
