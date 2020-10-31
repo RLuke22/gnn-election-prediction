@@ -51,7 +51,7 @@ Republican Party: 13 N, 8 -, 19 +
 * #maga, R, +, 80.6
 * #maga2020, R, +, 64.8
 * #magaa, R, +, 29.3
-( #makeamericagreatagain, R, +, 55
+* #makeamericagreatagain, R, +, 55
 * #kag, R, +, 64
 * #kag2020, R, +, 55.9
 * #keepamericagreat, R, +, 56.5
