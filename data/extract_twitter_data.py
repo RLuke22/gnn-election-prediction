@@ -323,7 +323,7 @@ class TweetDataEngine():
                 
                 collection.insert_one(row)
             
-            print('Region: {}, Tweets: {}'.format(region,i))
+            print('Region: {}, Tweets: {}'.format(region,i+1))
 
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)
