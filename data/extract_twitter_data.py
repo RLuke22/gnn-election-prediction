@@ -18,12 +18,13 @@ class TweetDataEngine():
         self.start_time = args.start_time
         self.end_time = args.end_time
         self.hashtag_list = args.hashtag_list
+        self.control = args.control
 
         self.client = pymongo.MongoClient("mongodb+srv://Quintillion:TzjTGcE5I6Bu7P9e@twitterdata.wkwqp.mongodb.net/TwitterData?retryWrites=true&w=majority")
         self.db = self.client['TwitterData']
 
         # collection = self.db['Tweets']
-        # c = collection.distinct("user_id",{"party": "R", "state": "Georgia"})
+        # c = collection.distinct("tweet_id",{"party": "N"})
         # print(len(c))
         # exit(0)
 
@@ -142,55 +143,74 @@ class TweetDataEngine():
         self.hashtags = self.hashtags_d_leaning + self.hashtags_r_leaning + self.hashtags_n_leaning
         
         self.geocodes = {
-                'Arizona0': '33.8244,-111.5818,146.4mi', 
-                'Florida0':'27.1984,-83.0723,251.73mi',
-                'Florida1':'29.4065,-86.1746,114mi',
-                'Iowa0': '42.7802,-95.5281,51.26mi', 
-                'Iowa1': '42.0493,-92.8059,100.05mi', 
-                'Iowa2': '41.87931,-90.7568,27.67mi', 
-                'Iowa3': '41.2540,-95.1875,37.76mi', 
-                'Georgia0': '33.5816,-83.9150,78.99mi', 
-                'Georgia1': '32.1667,-82.7974,109.92mi',
-                'Ohio0': '39.1930,-84.6620,8.81mi',
-                'Ohio1': '39.8454,-83.3036,79.47mi',
-                'Ohio2': '41.2866,-83.3382,34.05mi',
-                'Ohio3': '41.3320,-81.6402,56.99mi',
-                'Texas0': '27.7193,-97.6058,124.43mi',
-                'Texas1': '30.8456,-96.8243,187.81mi',
-                'Texas2': '31.8902,-106.4866,8.45mi',
-                'Texas3': '32.4299,-100.4680,147.90mi',
-                'NorthCarolina0': '35.3129,-78.2647,84.16mi',
-                'NorthCarolina1': '35.6695,-80.1571,58.10mi',
-                'NorthCarolina2': '35.7695,-81.5075,38.31mi',
-                'NorthCarolina3': '35.5960,-82.4469,26.29mi'
+            'Arizona0': '33.8244,-111.5818,146.4mi', 
+            'Florida0':'27.1984,-83.0723,251.73mi',
+            'Florida1':'29.4065,-86.1746,114mi',
+            'Iowa0': '42.7802,-95.5281,51.26mi', 
+            'Iowa1': '42.0493,-92.8059,100.05mi', 
+            'Iowa2': '41.87931,-90.7568,27.67mi', 
+            'Iowa3': '41.2540,-95.1875,37.76mi', 
+            'Georgia0': '33.5816,-83.9150,78.99mi', 
+            'Georgia1': '32.1667,-82.7974,109.92mi',
+            'Ohio0': '39.1930,-84.6620,8.81mi',
+            'Ohio1': '39.8454,-83.3036,79.47mi',
+            'Ohio2': '41.2866,-83.3382,34.05mi',
+            'Ohio3': '41.3320,-81.6402,56.99mi',
+            'Texas0': '27.7193,-97.6058,124.43mi',
+            'Texas1': '30.8456,-96.8243,187.81mi',
+            'Texas2': '31.8902,-106.4866,8.45mi',
+            'Texas3': '32.4299,-100.4680,147.90mi',
+            'NorthCarolina0': '35.3129,-78.2647,84.16mi',
+            'NorthCarolina1': '35.6695,-80.1571,58.10mi',
+            'NorthCarolina2': '35.7695,-81.5075,38.31mi',
+            'NorthCarolina3': '35.5960,-82.4469,26.29mi',
             }
+
+        self.geocodes_control = {
+            'Kansas0':'38.5022,-100.1416,103.09mi',
+            'Kansas1':'38.5022,-96.4283,103.09mi',
+            'Oklahoma0':'35.5540,-98.1014,103.14mi',
+            'Oklahoma1':'35.2136,-96.2117,99.49mi',
+            'Oklahoma2':'36.5841,-95.2230,34.04mi',
+            'Hawaii0': '20.8572,-157.4245,201.25mi'
+        }
 
         # 1000000 tweet cap
         # Thus, we have ~75000 tweets per day
         # Thus, we have ~37500 tweets per hashtag list per day
         # The 37500 retrieved tweets are distributed according to each region's population (manually calculated using 2020 Census data)
         self.region_tweet_counts = {
-                'Arizona0': 2909, 
-                'Florida0':8225,
-                'Florida1':445,
-                'Iowa0': 145, 
-                'Iowa1': 906, 
-                'Iowa2': 123, 
-                'Iowa3': 79, 
-                'Georgia0': 3152, 
-                'Georgia1': 1082,
-                'Ohio0': 497,
-                'Ohio1': 2091,
-                'Ohio2': 326,
-                'Ohio3': 1718,
-                'Texas0': 1499,
-                'Texas1': 9131,
-                'Texas2': 330,
-                'Texas3': 658,
-                'NorthCarolina0': 1887,
-                'NorthCarolina1': 1586,
-                'NorthCarolina2': 490,
-                'NorthCarolina3': 223
+            'Arizona0': 2909, 
+            'Florida0':8225,
+            'Florida1':445,
+            'Iowa0': 145, 
+            'Iowa1': 906, 
+            'Iowa2': 123, 
+            'Iowa3': 79, 
+            'Georgia0': 3152, 
+            'Georgia1': 1082,
+            'Ohio0': 497,
+            'Ohio1': 2091,
+            'Ohio2': 326,
+            'Ohio3': 1718,
+            'Texas0': 1499,
+            'Texas1': 9131,
+            'Texas2': 330,
+            'Texas3': 658,
+            'NorthCarolina0': 1887,
+            'NorthCarolina1': 1586,
+            'NorthCarolina2': 490,
+            'NorthCarolina3': 223,
+        }
+
+        # We give 10000 tweets per hashtag-list per day for the control states
+        self.region_tweet_counts_control = {
+            'Kansas0':317,
+            'Kansas1':3199,
+            'Oklahoma0':1842,
+            'Oklahoma1':2740,
+            'Oklahoma2':196,
+            'Hawaii0':1706
         }
 
         self.neutral_label = 'U'
@@ -241,17 +261,26 @@ class TweetDataEngine():
         collection = self.db['Tweets']
 
         print("Extracting tweets...")
-        for region in self.geocodes.keys():
+        if self.control:
+            regions = self.geocodes_control.keys()
+        else:
+            regions = self.geocodes.keys()
 
-            tweet_count = self.region_tweet_counts[region]
-            # for logging
+        for region in regions:
+
+            if self.control:
+                tweet_count = self.region_tweet_counts_control[region]
+                geocode = self.geocodes_control[region]
+            else:
+                tweet_count = self.region_tweet_counts[region]
+                geocode = self.geocodes[region]
 
             for i, tweet_info in enumerate(tweepy.Cursor(self.api.search, 
                                             q=self.query(), 
                                             count=tweet_count, 
                                             result_type="recent", 
                                             tweet_mode="extended", 
-                                            geocode=self.geocodes[region], 
+                                            geocode=geocode, 
                                             lang='en',
                                             until=self.end_time
                                             ).items(tweet_count)):
@@ -302,6 +331,7 @@ def read_args(args):
     parser.add_argument('--end-time', dest='end_time', type=str, default='2020-11-03', help='YYYY-MM-DD')
     parser.add_argument('--start-time', dest='start_time', type=str, default='2020-11-02', help='YYYY-MM-DD')
     parser.add_argument('--hashtag-list', dest='hashtag_list', type=int, default=1, help='1,2')
+    parser.add_argument('--control', dest='control', action='store_true', help='Whether to extract data from control states')
     
     return parser.parse_args(args)
 
@@ -314,6 +344,7 @@ if __name__ == '__main__':
     print("Start Time: ", args.start_time)
     print("End Time: ", args.end_time)
     print("Hashtag List: ", args.hashtag_list)
+    print("Control: ", args.control)
     print()
 
     data_engine = TweetDataEngine(args)

@@ -141,7 +141,10 @@ state_populations = {
     'Georgia':10736100,
     'Ohio':11747700,
     'Texas':29472300,
-    'NorthCarolina':10611900}
+    'NorthCarolina':10611900,
+    'Kansas':2910360,
+    'Oklahoma':3954820,
+    'Hawaii':1412690}
 
 region_populations = {'Arizona0': 1, 
             'Iowa0': 355180, 
@@ -163,4 +166,10 @@ region_populations = {'Arizona0': 1,
             'NorthCarolina0': 4725965,
             'NorthCarolina1': 3973465,
             'NorthCarolina2': 1226690,
-            'NorthCarolina3': 557021}
+            'NorthCarolina3': 557021,
+            'Kansas0': 245995,
+            'Kansas1': 2481948,
+            'Oklahoma0': 2187114,
+            'Oklahoma1': 3253490,
+            'Oklahoma2': 232465,
+            'Hawaii0': 1412690}

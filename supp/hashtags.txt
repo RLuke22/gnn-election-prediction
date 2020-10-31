@@ -2,22 +2,22 @@ Democratic Party: 15 N, 5 -, 20 +
 * #biden, D, N, 68.8
 * #bidenharris2020, D, N, 73.9
 * #biden2020, D, N, 56.7
-#joebiden2020, D, N, 37.8
+* #joebiden2020, D, N, 37.8
 * #democrats, D, N, 65.2
 * #democrat, D, N, 55
 * #joebiden, D, N, 68.2
-#hunterbiden, D, N, 52.9
+* #hunterbiden, D, -, 52.9
 * #kamalaharris, D, N, 61.3
 * #voteblue, D, +, 57.2
 * #votebidenharris2020, D, +, 63
 * #votebidenharris, D, +, 55
 * #votebluetosaveamerica, D, +, 61.5
 * #votebluetoendthisnightmare, D, +, 58.8
-#votebluenomatterwho, D, +, 37.1
+* #votebluenomatterwho, D, +, 37.1
 * #voteblue2020, D, +, 55.2
 #uniteblue, D, +, 27.7
 * #bidenharrislandslide2020, D, +, 57.4
-#bidenharris2020landslide, D, +, 51.4
+* #bidenharris2020landslide, D, +, 51.4
 * #bidenharris, D, N, 63.2
  #buildbackbetter, D, +, 46.3
 #joebidenforpresident, D, +, 19
@@ -26,16 +26,16 @@ Democratic Party: 15 N, 5 -, 20 +
 #creepyjoebiden, D, -, 40.6
 #creepyjoe, D, -, 41.1
 * #neverbiden, D, -, 41.8
-#bluewave, D, +, 45.3
-#bluewave2020, D, +, 51.5
+* #bluewave, D, +, 45.3
+* #bluewave2020, D, +, 51.5
 * #resist, D, N, 62.8
 * #theresistance, D, N, 41.9
 * #votebiden, D, +, 58.1
 * #votebidenharristosaveamerica, D, +, 57.3
 #bidenharris2020tosaveamerica, D, +, 54.6
-#bidenharristosaveamerica, D, +, 56.2
+* #bidenharristosaveamerica, D, +, 56.2
 #joementum, D, +, 30.8
-#teambiden, D, N, 29.2
+* #teambiden, D, N, 29.2
 #teamjoe, D, N, 42.9
 #bidenlies, D, -, 37
 
@@ -43,17 +43,17 @@ Republican Party: 13 N, 8 -, 19 +
 * #trump, R, N, 79.2
 * #trump2020, R, N, 78.5
 * #trump2020landslide, R, +, 64.9
-#trump2020nowmorethanever, R, +, 54.1
+* #trump2020nowmorethanever, R, +, 54.1
 * #donaldtrump, R, N, 61.5
-#donaldtrump2020, R, N, 19.2
+* #donaldtrump2020, R, N, 19.2
 * #republicans, R, N, 52.5
 * #republican, R, N, 46.6
 * #maga, R, +, 80.6
 * #maga2020, R, +, 64.8
 * #magaa, R, +, 29.3
-#makeamericagreatagain, R, +, 55
+( #makeamericagreatagain, R, +, 55
 * #kag, R, +, 64
-#kag2020, R, +, 55.9
+* #kag2020, R, +, 55.9
 * #keepamericagreat, R, +, 56.5
 #pence, R, N, 47.5
 * #mikepence, R, N, 40.5
@@ -61,23 +61,23 @@ Republican Party: 13 N, 8 -, 19 +
 * #trumppence2020, R, N, 63.8
 * #dumptrump, R, -, 51
 #dumptrump2020, R, -, 51.8
-#americafirst, R, N, 54.7
+* #americafirst, R, N, 54.7
 #notmypresident, R, -, 44.7
 #fakepresident, R, -, 40.6
 #draintheswamp, R, +, 52.4
-#trumptrain, R, +, 46.8
+* #trumptrain, R, +, 46.8
 * #votetrump, R, +, 45.5
 * #votehimout, R, -, 57.3
 #votethemout, R, -, 38.7
-#votehimout2020, R, -, 57.3
+* #votehimout2020, R, -, 57.3
 * #voteredtosaveamerica, R, +, 58.5
-#voteredtosaveamerica2020, R, +, 57.7
+* #voteredtosaveamerica2020, R, +, 57.7
 #donald, R, N, 32.7
 #trumplies, R, -, 48.2
-#trump2020tosaveamerica, R, +, 56.9
+* #trump2020tosaveamerica, R, +, 56.9
 #redwave, R, +, 38.5
 * #votered, R, +, 50.3
 * #fourmoreyears, R, +, 57.9
 #trumprally, R, N, 52.8
-#teamtrump, R, +, 40.8
+* #teamtrump, R, +, 40.8
 
