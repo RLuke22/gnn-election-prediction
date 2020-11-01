@@ -105,6 +105,7 @@ fieldnames=[
     'user_id', 
     'retweet_user_id', 
     'text', 
+    'party',
     'state', 
     'hashtags', 
     'keywords'
@@ -197,6 +198,7 @@ with open(csv_path, 'a+') as csvfile:
         row['user_id'] = user_id
         row['retweet_user_id'] = retweet_user_id
         row['text'] = text 
+        row['party'] = party
         row['state'] = state
         row['hashtags'] = hashtags
         row['keywords'] = n_terms
