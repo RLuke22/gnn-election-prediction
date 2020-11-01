@@ -1,21 +1,12 @@
 import re 
 import pickle 
-import numpy as np 
-import pandas as pd 
 import time
 
 import nltk
-nltk.download('wordnet')
+# nltk.download('wordnet') # run only first time
 from nltk.stem import WordNetLemmatizer
 from sentence_transformers import SentenceTransformer
-import torch
 from tqdm import tqdm
-
-use_gpus = torch.cuda.is_available()
-if use_gpus:
-    device = torch.device("cuda")
-else:
-    device = torch.device("cpu")
 
 class DataPreprocessor():
     def __init__(self):

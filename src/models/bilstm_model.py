@@ -1,7 +1,5 @@
 import random
 random.seed(22)
-from numpy.random import seed
-seed(22)
 
 import torch 
 torch.manual_seed(22)
@@ -26,22 +24,22 @@ class BILSTM(nn.Module):
 
         self.embedding = nn.Embedding(vocab_size, self.embedding_dim)
         self.lstm = nn.LSTM(input_size=self.embedding_dim, hidden_size=self.hidden_dim, bidirectional=True)
-        
-        self.lstm_hidden = (torch.zeros(2, self.batch_size, self.hidden_dim).to(device),
-                            torch.zeros(2, self.batch_size, self.hidden_dim).to(device))
 
         self.fc = nn.Linear(self.hidden_dim * 2, 2)
-
-
+    
     def forward(self, x):
         
-        x = self.embedding(x).view(len(x), self.batch_size, 1)
-        rnn, self.hidden_dim = self.lstm(x, self.hidden_dim)
+        x = self.embedding(x).view(x.shape[0], self.batch_size, -1)
+
+        h0 = torch.zeros(2, self.batch_size, self.hidden_dim).to(device)
+        c0 = torch.zeros(2, self.batch_size, self.hidden_dim).to(device)
+
+        rnn, self.hidden = self.lstm(x, (h0, c0))
 
         # only use last states as input to dense layer
         y = self.fc(rnn[-1])
 
-        log_softmax_y = F.log_softmax(y)
+        log_softmax_y = F.log_softmax(y, dim=1)
 
         return log_softmax_y
 

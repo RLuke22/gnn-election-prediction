@@ -8,7 +8,7 @@ import tweepy
 
 client = pymongo.MongoClient("mongodb+srv://Quintillion:TzjTGcE5I6Bu7P9e@twitterdata.wkwqp.mongodb.net/TwitterData?retryWrites=true&w=majority")
 db = client['TwitterData']
-collection = db['Followers']
+collection = db['Tweets']
 
 consumer_key_Q = "DT3XJxLbG9gSAExLTnw8Ya8wy"
 consumer_secret_Q = "9zhg6sRhqaBBgzYyBuoaohPH6WLpYEMWkg3S0koAhr50dfZQ1q"

@@ -1,9 +1,6 @@
-import numpy as np 
 import os 
 import random
 random.seed(22)
-from numpy.random import seed
-seed(22)
 
 import pandas as pd
 import csv

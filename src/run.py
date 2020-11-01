@@ -87,6 +87,85 @@ def make_output_path(args):
 
     return out_dir
 
+def reduce_lr_on_plateau(optimizer, factor=.1):
+    for i, param_group in enumerate(optimizer.param_groups):
+        old_lr = float(param_group['lr'])
+        new_lr = old_lr * factor
+        param_group['lr'] = new_lr
+        print('Adjusting learning rate from {:.3e} to {:.3e}'.format(old_lr, new_lr))
+
+def get_accuracy(truth, pred):
+    assert len(truth) == len(pred)
+    right = 0
+    for i in range(len(truth)):
+        if truth[i] == pred[i]:
+            right += 1.0
+    return right / len(truth)
+
+def train_epoch(model, 
+                train_iter, 
+                loss_function, 
+                optimizer, 
+                text_field, 
+                label_field,
+                epoch):
+    model.train()
+    avg_loss = 0.0
+    gts = []
+    preds = []
+    for i, batch in tqdm(enumerate(train_iter)):
+        text, label = batch.text, batch.label
+        
+        # decrease class labels by 1
+        label.data.sub_(1)
+        gts += list(label.data)
+
+        # in case batch size smaller
+        model.batch_size = int(label.data.shape[0])
+        
+        pred = model(text)
+        pred_label = pred.data.max(1)[1].cpu().numpy()
+        preds += [x for x in pred_label]
+        model.zero_grad()
+        
+        loss = loss_function(pred, label)
+
+        avg_loss += float(loss)
+        
+        loss.backward()
+        optimizer.step()
+    
+    avg_loss /= len(train_iter)
+    acc = get_accuracy(gts, preds)
+    return avg_loss, acc
+
+def evaluate(model,
+             data,
+             loss_function):
+    model.eval()
+    avg_loss = 0.0
+    gts = []
+    preds = []
+    for batch in tqdm(data):
+        text, label = batch.text, batch.label
+        # decrease class labels by 1
+        label.data.sub_(1)
+        gts += list(label.data)
+        # in case batch size smaller
+        model.batch_size = int(label.data.shape[0])
+        
+        pred = model(text)
+        pred_label = pred.data.max(1)[1].cpu().numpy()
+        preds += [x for x in pred_label]
+        
+        loss = loss_function(pred, label)
+        avg_loss += float(loss)
+    
+    avg_loss /= len(train_iter)
+    acc = get_accuracy(gts, preds)
+    return avg_loss, acc
+
+
 def run(args):
 
     N_SPLITS = 5
@@ -107,11 +186,13 @@ def run(args):
     data_loader.gen_splits()
     
     for fold_n in range(N_SPLITS):
+        best_model_file = os.path.join(output_path, 'fold{:02d}.pth'.format(fold_n))
+        
         if args.model == 'lstm':
             text_field = data.Field(lower=True)
             label_field = data.Field(sequential=False)
         
-            train_iter, dev_iter, test_iter = load_iterators(text_field, label_field, args.batch_size, fold_n, csv_dir)
+            train_iter, val_iter, test_iter = load_iterators(text_field, label_field, args.batch_size, fold_n, csv_dir)
 
             # pretrained embeddings -- word2vec
             word_to_idx = text_field.vocab.stoi 
@@ -128,17 +209,70 @@ def run(args):
             # populate the weights of the embedding layer
             model.embedding.weight.data.copy_(torch.from_numpy(pretrained_embeddings))
 
-            best_model = model 
             optimizer = optim.Adam(model.parameters(), lr=args.lr)
             loss_function = nn.NLLLoss()
 
+            best_model = model 
+            best_val_acc = 0
+            early_stop_idx = 0
+            reduce_lr_idx = 0
             print("Training Fold {}...".format(fold_n))
             for epoch in range(args.epochs):
-                print("Made it here.")
-                exit(0)
+                start_time = time.time()
+                loss, acc = train_epoch(
+                    model, 
+                    train_iter, 
+                    loss_function, 
+                    optimizer, 
+                    text_field, 
+                    label_field,
+                    epoch
+                )
+                # logging
+                end_time = time.time()
+                print("Epoch: {}".format(epoch))
+                print("Time Elapsed: {:.2f}s".format(end_time - start_time))
+                print("Train - Loss: {:.3f}, Accuracy: {:.2f}".format(loss, acc*100))
 
+                with torch.no_grad():
+                    val_loss, val_acc = evaluate(model, val_iter, loss_function)
+                    print("Validation - Loss: {:.3f}, Accuracy: {:.2f}".format(val_loss, val_acc*100))
+                    print("Learning rate: {:.3e}".format(optimizer.param_groups[0]['lr']))
+                    
+                    if val_acc > best_val_acc:
+                        print("Validation accuracy improved from {:.5f} to {:.5f}. Saving model to {}".format(best_val_acc, val_acc, best_model_file))
+                        
+                        best_val_acc = val_acc
+                        best_model = model
 
+                        torch.save({
+                            "epoch": epoch+1,
+                            "best_val_acc": best_val_acc,
+                            "model": best_model.state_dict(),
+                            "optimizer": optimizer.state_dict(),
+                        }, best_model_file)
 
+                        early_stop_idx = 0
+                        reduce_lr_idx = 0
+                    else:
+                        print("Validation acc did not improve from {:.5f}".format(best_chord_loss))
+                        early_stop_idx += 1
+                        reduce_lr_idx += 1
+
+                    # Learning Rate Decay
+                    if reduce_lr_idx > args.reduce_lr - 1:
+                        reduce_lr_factor = 0.1
+                        reduce_lr_on_plateau(optimizer=optimizer, factor=reduce_lr_factor)
+                        reduce_lr_idx = 0
+
+                    # Early Stopping
+                    if early_stop_idx > args.early_stopping - 1:
+                        print('\nEarly stopping at epoch {}'.format(epoch+1))
+                        break
+
+        
+            print("Evaluating Fold {}...".format(fold_n))
+            test_loss, test_acc = evaluate(best_model, test_iter, loss_function)
 
 
 def read_args(args):
@@ -155,11 +289,11 @@ def read_args(args):
     parser.add_argument('--text-cleaning', dest='text_cleaning', action='store_true', help='clean the data?')
 
     # model training parameters
-    parser.add_argument('--batch-size', dest='batch_size', type=int, default=5)
+    parser.add_argument('--batch-size', dest='batch_size', type=int, default=64)
     parser.add_argument('--epochs', dest='epochs', type=int, default=100)
-    parser.add_argument('--early-stopping', dest='early_stopping', type=int, default=10)
+    parser.add_argument('--early-stopping', dest='early_stopping', type=int, default=5)
     parser.add_argument('--lr', dest='lr', type=float, default=0.001)
-    parser.add_argument('--reduce-lr', dest='reduce_lr', type=int, default=5)
+    parser.add_argument('--reduce-lr', dest='reduce_lr', type=int, default=3)
     parser.add_argument('--num-workers', dest='num_workers', type=int, default=6)
     
     # model parameters
