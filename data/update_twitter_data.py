@@ -99,7 +99,9 @@ drn_hashtags = hashtags_d_leaning + hashtags_r_leaning + hashtags_n_leaning
 num_updated = 0
 print_every_n = 5000
 
-for document in collection.find():
+not_updated_documents = {'hashtags': {'$exists': False}}
+
+for document in collection.find(not_updated_documents):
     _id      = document['_id']
     tweet_id = document['tweet_id']
     user_id  = document['user_id']
