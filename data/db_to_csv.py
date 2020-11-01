@@ -166,7 +166,7 @@ with open(csv_path, 'a+') as csvfile:
             state = 'Ohio'
         elif state in ['Texas', 'Texas0', 'Texas1', 'Texas2', 'Texas3']:
             state = 'Texas'
-        elif state in ['NorthCarolina0', 'NorthCarolina1', 'NorthCarolina2', 'NorthCarolina3']:
+        elif state in ['NorthCarolina', 'NorthCarolina0', 'NorthCarolina1', 'NorthCarolina2', 'NorthCarolina3']:
             state = 'NorthCarolina'
         elif state in ['Kansas', 'Kansas0', 'Kansas1']:
             state = 'Kansas'
