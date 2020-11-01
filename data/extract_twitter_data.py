@@ -24,7 +24,7 @@ class TweetDataEngine():
         self.db = self.client['TwitterData']
 
         # collection = self.db['Tweets']
-        # c = collection.distinct("tweet_id",{"party": "N"})
+        # c = collection.distinct("retweet_user_id",{"party": "UU"})
         # print(len(c))
         # exit(0)
 

@@ -5,10 +5,11 @@ import pandas as pd
 import time
 
 import nltk
-from nltk.corpus import stopwords 
-from nltk.stem import SnowballStemmer
+nltk.download('wordnet')
+from nltk.stem import WordNetLemmatizer
 from sentence_transformers import SentenceTransformer
 import torch
+from tqdm import tqdm
 
 use_gpus = torch.cuda.is_available()
 if use_gpus:
@@ -16,13 +17,8 @@ if use_gpus:
 else:
     device = torch.device("cpu")
 
-print(device)
-
 class DataPreprocessor():
-    def __init__(self, args):
-        self.model = args.model
-        self.text_cleaning = args.text_cleaning
-
+    def __init__(self):
         # taken from https://www.kaggle.com/stoicstatic/twitter-sentiment-analysis-for-beginners
         self.emojis = {':)': 'smile', ':-)': 'smile', ';d': 'wink', ':-E': 'vampire', ':(': 'sad', 
           ':-(': 'sad', ':-<': 'sad', ':P': 'raspberry', ':O': 'surprised',
@@ -58,7 +54,7 @@ class DataPreprocessor():
         self.seq_replace_pattern = r"\1\1"
         self.lemmatizer = WordNetLemmatizer()
         
-    def clean(text_list):
+    def clean(self, text_list):
         cleaned_text = []
 
         print("Cleaning data...")
@@ -82,29 +78,13 @@ class DataPreprocessor():
             # lemmatize words and remove stopwords
             tweet_words = ''
             for word in tweet.split():
-                if word not in stopword_list and len(word) > 1:
+                if word not in self.stopword_list and len(word) > 1:
                     word = self.lemmatizer.lemmatize(word)
                     tweet_words += (word + ' ')
 
             cleaned_text.append(tweet_words)
 
         return cleaned_text
-
-    # for testing
-    def preprocess_sentiment140(self):
-
-        df = pd.read_csv('../../sentiment140.csv', header=None, encoding='latin')
-        # only classify with text and sentiment
-        df.columns = ['sentiment', 'id', 'date', 'query', 'user_id', 'text']
-        df = df.drop(['id', 'date', 'query', 'user_id'], axis=1)
-        # replace 4's (positive) with 1
-        df['sentiment'] = df['sentiment'].replace(4,1)
-
-        # convert to lists
-        text, sentiment = list(df['text']), list(df['sentiment'])
-
-        return text, sentiment
-
 
     def preprocess_election2020(self):
         model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
