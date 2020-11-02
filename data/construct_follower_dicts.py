@@ -4,6 +4,7 @@ import sys
 import argparse
 import pickle
 import numpy as np
+import random
 
 class FollowerDictsEngine():
     def __init__(self, args):
@@ -80,11 +81,62 @@ class FollowerDictsEngine():
                         d_list = list(dict.fromkeys(d_list))
                         r_list = list(dict.fromkeys(r_list))
 
+        print(str(rows_written) + " rows written")       
+        print("Removing duplicates")
+        d_list = list(dict.fromkeys(d_list))
+        r_list = list(dict.fromkeys(r_list))
+
         with open('d_followers_tweets.pkl', 'wb') as handle:
             pickle.dump(d_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
         
         with open('r_followers_tweets.pkl', 'wb') as handle:
             pickle.dump(r_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def create_edge_list(self):
+        with open(self.d_list_file, 'rb') as handle:
+            d_list = pickle.load(handle)
+
+        with open(self.r_list_file, 'rb') as handle:
+            r_list = pickle.load(handle)
+
+        n_rand_neighbours = 100
+        print_every_n = 5000000
+
+        print("Constructing D edges: " + str(len(d_list) * n_rand_neighbours))
+        d_edges = []
+        d_edges_created = 0
+        for u in d_list:
+            rand_neighbours = random.sample(d_list, n_rand_neighbours)
+            while u in rand_neighbours:
+                rand_neighbours = random.sample(d_list, n_rand_neighbours)
+
+            for v in rand_neighbours:
+                d_edges.append((u, v))
+            d_edges_created += n_rand_neighbours
+
+            if d_edges_created % print_every_n == 0:
+                print(d_edges_created)
+
+        with open('d_edge_list.pkl', 'wb') as handle:
+            pickle.dump(d_edges, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        print("Constructing R edges: " + str(len(r_list) * n_rand_neighbours))
+        r_edges = []
+        r_edges_created = 0
+        for u in r_list:
+            rand_neighbours = random.sample(r_list, n_rand_neighbours)
+            while u in rand_neighbours:
+                rand_neighbours = random.sample(r_list, n_rand_neighbours)
+
+            for v in rand_neighbours:
+                r_edges.append((u, v))
+            r_edges_created += n_rand_neighbours
+
+            if r_edges_created % print_every_n == 0:
+                print(r_edges_created)        
+        
+        with open('r_edge_list.pkl', 'wb') as handle:
+            pickle.dump(r_edges, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def read_args(args):
@@ -104,5 +156,6 @@ if __name__ == '__main__':
 
     #follower_dicts.create_userid_to_tweetids_dict()
     #follower_dicts.create_dr_tweet_list()
+    follower_dicts.create_edge_list()
     
 
