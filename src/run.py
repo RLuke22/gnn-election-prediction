@@ -22,10 +22,10 @@ import numpy as np
 import pickle
 import pandas as pd
 
-from models.bilstm_model import BILSTM
+from models.bigru_model import BIGRU
 
 from datasets.sentiment140_dataset import Sentiment140Dataset
-# from datasets.election2020_dataset import Election2020Dataset
+from datasets.election2020_dataset import Election2020Dataset
 
 # for testing, print full numpy arrays
 np.set_printoptions(threshold=sys.maxsize)
@@ -71,7 +71,7 @@ def load_iterators(text_field, label_field, batch_size, fold_n, csv_dir):
     label_field.build_vocab(train, val, test)
 
     train_iter, val_iter, test_iter = data.BucketIterator.splits((train, val, test),
-                batch_sizes=(batch_size, len(val), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=device)
+                batch_sizes=(batch_size, batch_size, batch_size), sort_key=lambda x: len(x.text), repeat=False, device=device)
     
     return train_iter, val_iter, test_iter
 
@@ -113,7 +113,7 @@ def train_epoch(model,
     avg_loss = 0.0
     gts = []
     preds = []
-    for i, batch in tqdm(enumerate(train_iter)):
+    for batch in tqdm(train_iter):
         text, label = batch.text, batch.label
         
         # decrease class labels by 1
@@ -146,7 +146,7 @@ def evaluate(model,
     avg_loss = 0.0
     gts = []
     preds = []
-    for batch in tqdm(data):
+    for batch in data:
         text, label = batch.text, batch.label
         # decrease class labels by 1
         label.data.sub_(1)
@@ -161,7 +161,7 @@ def evaluate(model,
         loss = loss_function(pred, label)
         avg_loss += float(loss)
     
-    avg_loss /= len(train_iter)
+    avg_loss /= len(data)
     acc = get_accuracy(gts, preds)
     return avg_loss, acc
 
@@ -178,6 +178,10 @@ def run(args):
     
     elif args.dataset == 'election2020':
         data_loader = Election2020Dataset(args, N_SPLITS)
+        if args.text_cleaning: 
+            csv_dir = '../../election2020_splits_cleaned'
+        else:
+            csv_dir = '../../election2020_splits'
 
     # Output path we write best model to
     output_path = make_output_path(args)
@@ -188,7 +192,7 @@ def run(args):
     for fold_n in range(N_SPLITS):
         best_model_file = os.path.join(output_path, 'fold{:02d}.pth'.format(fold_n))
         
-        if args.model == 'lstm':
+        if args.model == 'bigru':
             text_field = data.Field(lower=True)
             label_field = data.Field(sequential=False)
         
@@ -205,7 +209,7 @@ def run(args):
             for word, vector in word2vec.items():
                 pretrained_embeddings[word_to_idx[word] - 1] = vector
             
-            model = BILSTM(args, vocab_size=len(text_field.vocab)).cuda()
+            model = BIGRU(args, vocab_size=len(text_field.vocab)).cuda()
             # populate the weights of the embedding layer
             model.embedding.weight.data.copy_(torch.from_numpy(pretrained_embeddings))
 
@@ -255,7 +259,7 @@ def run(args):
                         early_stop_idx = 0
                         reduce_lr_idx = 0
                     else:
-                        print("Validation acc did not improve from {:.5f}".format(best_chord_loss))
+                        print("Validation acc did not improve from {:.5f}".format(best_val_acc))
                         early_stop_idx += 1
                         reduce_lr_idx += 1
 
@@ -269,17 +273,20 @@ def run(args):
                     if early_stop_idx > args.early_stopping - 1:
                         print('\nEarly stopping at epoch {}'.format(epoch+1))
                         break
+                    
+                    print()
 
-        
             print("Evaluating Fold {}...".format(fold_n))
             test_loss, test_acc = evaluate(best_model, test_iter, loss_function)
+            print("Test Accuracy: {:.5f}".format(test_acc))
+            print()
 
 
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)
 
     # model selection parameters
-    parser.add_argument('--model', dest='model', type=str, help='lstm, roberta-sentence', default='lstm')
+    parser.add_argument('--model', dest='model', type=str, help='bigru, roberta-sentence', default='bigru')
     parser.add_argument('--dataset', dest='dataset', type=str, default='sentiment140', help='election2020,sentiment140')
     parser.add_argument('--seed', dest='seed', type=int, default=22)
     parser.add_argument('--output-dir', dest='output', type=str, default='results')
@@ -289,19 +296,18 @@ def read_args(args):
     parser.add_argument('--text-cleaning', dest='text_cleaning', action='store_true', help='clean the data?')
 
     # model training parameters
-    parser.add_argument('--batch-size', dest='batch_size', type=int, default=64)
-    parser.add_argument('--epochs', dest='epochs', type=int, default=100)
-    parser.add_argument('--early-stopping', dest='early_stopping', type=int, default=5)
+    parser.add_argument('--batch-size', dest='batch_size', type=int, default=128)
+    parser.add_argument('--epochs', dest='epochs', type=int, default=1)
+    parser.add_argument('--early-stopping', dest='early_stopping', type=int, default=4)
     parser.add_argument('--lr', dest='lr', type=float, default=0.001)
-    parser.add_argument('--reduce-lr', dest='reduce_lr', type=int, default=3)
+    parser.add_argument('--reduce-lr', dest='reduce_lr', type=int, default=2)
     parser.add_argument('--num-workers', dest='num_workers', type=int, default=6)
     
     # model parameters
     parser.add_argument('--embedding-dim', dest='embedding_dim', type=int, default=300)
-    parser.add_argument('--hidden-dim', dest='hidden_dim', type=int, default=150)
-    parser.add_argument('--dropout', dest='dropout', type=float, default=0.5)
+    parser.add_argument('--hidden-dim', dest='hidden_dim', type=int, default=96)
+    parser.add_argument('--dropout', dest='dropout', type=float, default=0)
 
-    
     return parser.parse_args(args)
 
 if __name__ == '__main__':
