@@ -33,12 +33,14 @@ class BIGRU(nn.Module):
 
         rnn, self.hidden = self.gru(x, (h0))
 
+        sentence_embedding = rnn[-1]
+
         # only use last states as input to dense layer
         y = self.fc(self.dropout_layer(rnn[-1]))
 
         log_softmax_y = F.log_softmax(y, dim=1)
 
-        return log_softmax_y
+        return log_softmax_y, sentence_embedding
 
 
 

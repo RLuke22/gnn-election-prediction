@@ -19,6 +19,7 @@ class Election2020Dataset():
         self.csv_path = '../../election2020.csv'
         self.seed = args.seed
         self.model = args.model
+        self.full_training = args.full_training
 
         if self.text_cleaning:
             self.output_csv_dir = '../../election2020_splits_cleaned'
@@ -77,7 +78,7 @@ class Election2020Dataset():
     def gen_splits(self):
 
         # Five folds, each fold has a train, test, validation set
-        if len(os.listdir(self.output_csv_dir)) == 3 * 5:
+        if len(os.listdir(self.output_csv_dir)) == 3 * 5 + 1:
             return
         
         print("Generating CSV files...", end='')
@@ -88,6 +89,18 @@ class Election2020Dataset():
 
         print(len(X), len(y))
 
+        print("Constructing full training set...", end="")
+        with open(os.path.join(self.output_csv_dir, 'full_data.csv'), 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=['text', 'party'])
+            
+            for j in range(len(X)):
+                row = {
+                    'text':X[j], 
+                    'party':y[j]
+                }   
+                writer.writerow(row)
+
+        print("Constructing 5-fold splits...", end="")
         # Use stratified K-fold to get most evenly-distributed dataset
         skf_test = StratifiedKFold(self.n_splits, random_state=self.seed, shuffle=True)
 
@@ -97,36 +110,35 @@ class Election2020Dataset():
 
             X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, stratify=y_train_val, train_size=0.75, shuffle=True, random_state=self.seed)
             
-            if self.model == 'bigru':
-                with open(os.path.join(self.output_csv_dir, 'train{:02d}.csv'.format(i)), 'w') as csv_file:
-                    writer = csv.DictWriter(csv_file, fieldnames=['text', 'party'])
-                    
-                    for j in range(len(X_train)):
-                        row = {
-                            'text':X_train[j], 
-                            'party':y_train[j]
-                        }   
-                        writer.writerow(row)
-
-                with open(os.path.join(self.output_csv_dir, 'valid{:02d}.csv'.format(i)), 'w') as csv_file:
-                    writer = csv.DictWriter(csv_file, fieldnames=['text', 'party'])
-                    
-                    for j in range(len(X_val)):
-                        row = {
-                            'text':X_val[j], 
-                            'party':y_val[j]
-                        }   
-                        writer.writerow(row)
+            with open(os.path.join(self.output_csv_dir, 'train{:02d}.csv'.format(i)), 'w') as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=['text', 'party'])
                 
-                with open(os.path.join(self.output_csv_dir, 'test{:02d}.csv'.format(i)), 'w') as csv_file:
-                    writer = csv.DictWriter(csv_file, fieldnames=['text', 'party'])
-                    
-                    for j in range(len(X_test)):
-                        row = {
-                            'text':X_test[j], 
-                            'party':y_test[j]
-                        }   
-                        writer.writerow(row)                
+                for j in range(len(X_train)):
+                    row = {
+                        'text':X_train[j], 
+                        'party':y_train[j]
+                    }   
+                    writer.writerow(row)
+
+            with open(os.path.join(self.output_csv_dir, 'valid{:02d}.csv'.format(i)), 'w') as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=['text', 'party'])
+                
+                for j in range(len(X_val)):
+                    row = {
+                        'text':X_val[j], 
+                        'party':y_val[j]
+                    }   
+                    writer.writerow(row)
+            
+            with open(os.path.join(self.output_csv_dir, 'test{:02d}.csv'.format(i)), 'w') as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=['text', 'party'])
+                
+                for j in range(len(X_test)):
+                    row = {
+                        'text':X_test[j], 
+                        'party':y_test[j]
+                    }   
+                    writer.writerow(row)                
 
         print("Done.")
 

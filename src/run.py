@@ -25,6 +25,7 @@ from models.bigru_model import BIGRU
 
 from datasets.sentiment140_dataset import Sentiment140Dataset
 from datasets.election2020_dataset import Election2020Dataset
+from sklearn.metrics import confusion_matrix
 
 # for testing, print full numpy arrays
 np.set_printoptions(threshold=sys.maxsize)
@@ -63,9 +64,23 @@ def load_bin_vec(fname, vocab):
     return word_vecs
 
 # borrowed from https://github.com/clairett/pytorch-sentiment-classification
-def load_iterators(text_field, label_field, batch_size, fold_n, csv_dir):
-    train, val, test = data.TabularDataset.splits(path=csv_dir, train='train{:02d}.csv'.format(fold_n),
-                                                  validation='valid{:02d}.csv'.format(fold_n), test='test{:02d}.csv'.format(fold_n), format='csv',
+def load_iterators(text_field, label_field, batch_size, fold_n, csv_dir, full_training, save_embeddings):
+
+    if full_training:
+        train_csv_name = 'full_data.csv'
+    else:
+        train_csv_name = 'train{:02d}.csv'.format(fold_n)
+
+    # We need all embeddings for GNN. Thus, we still perform 5-fold CV
+    # and use the training data at each fold to train the model. Then
+    # perform inference on all the data (Note full_data.csv is simply a csv containing all data train/val/test)
+    if save_embeddings:
+        test_csv_name = 'full_data.csv'
+    else:
+        test_csv_name = 'test{:02d}.csv'.format(fold_n)
+
+    train, val, test = data.TabularDataset.splits(path=csv_dir, train=train_csv_name,
+                                                  validation='valid{:02d}.csv'.format(fold_n), test=test_csv_name, format='csv',
                                                   fields=[('text', text_field), ('label', label_field)])
     text_field.build_vocab(train, val, test)
     label_field.build_vocab(train, val, test)
@@ -78,6 +93,9 @@ def load_iterators(text_field, label_field, batch_size, fold_n, csv_dir):
 def make_output_path(args):
 
     model_dir = '{}'.format(args.model)
+    if args.full_training:
+        model_dir += '_full'
+
     model_dir += '_{}_{}'.format(args.dropout, args.hidden_dim)
 
     # create path for model weights and results
@@ -125,7 +143,7 @@ def train_epoch(model,
         # in case batch size smaller
         model.batch_size = int(label.data.shape[0])
         
-        pred = model(text)
+        pred, _ = model(text)
         pred_label = pred.data.max(1)[1].cpu().numpy()
         preds += [x for x in pred_label]
         model.zero_grad()
@@ -142,7 +160,7 @@ def train_epoch(model,
     return avg_loss, acc
 
 # borrowed from https://github.com/clairett/pytorch-sentiment-classification
-def evaluate(model,
+def val_evaluate(model,
              data,
              loss_function):
     model.eval()
@@ -157,7 +175,7 @@ def evaluate(model,
         # in case batch size smaller
         model.batch_size = int(label.data.shape[0])
         
-        pred = model(text)
+        pred, _ = model(text)
         pred_label = pred.data.max(1)[1].cpu().numpy()
         preds += [x for x in pred_label]
         
@@ -166,11 +184,54 @@ def evaluate(model,
     
     avg_loss /= len(data)
     acc = get_accuracy(gts, preds)
+    
     return avg_loss, acc
+
+# borrowed from https://github.com/clairett/pytorch-sentiment-classification
+def test_evaluate(model,
+             data,
+             loss_function,
+             save_embeddings,
+             hidden_dim):
+    
+    model.eval()
+    avg_loss = 0.0
+    gts = []
+    if save_embeddings:
+        # [n_tweets x 2*hidden_dim] (where hidden_dim is hidden dimension in GRU)
+        # TODO: remove hardcoded integer
+        sentence_embeddings = torch.zeros(122443, hidden_dim * 2)
+    
+    preds = []
+    count = 0
+    for batch in tqdm(data):
+        text, label = batch.text, batch.label
+        # decrease class labels by 1
+        label.data.sub_(1)
+        gts += list(label.data)
+        # in case batch size smaller
+        model.batch_size = int(label.data.shape[0])
+        
+        pred, batch_embeddings = model(text)
+        pred_label = pred.data.max(1)[1].cpu().numpy()
+        preds += [x for x in pred_label]
+
+        for x in batch_embeddings:
+            sentence_embeddings[count] = x
+            count += 1
+        
+        loss = loss_function(pred, label)
+        avg_loss += float(loss)
+    
+    avg_loss /= len(data)
+    acc = get_accuracy(gts, preds)
+
+    return avg_loss, acc, gts, preds, sentence_embeddings
 
 def run(args):
 
     N_SPLITS = 5
+
     if args.dataset == 'sentiment140':
         data_loader = Sentiment140Dataset(args, N_SPLITS)
         if args.text_cleaning: 
@@ -191,6 +252,10 @@ def run(args):
     # creates csv files which are then passed into the TabularDataset TorchText function call
     data_loader.gen_splits()
     
+    # use full training set -- no 5-fold CV
+    if args.full_training:
+        N_SPLITS = 1
+    
     for fold_n in range(N_SPLITS):
         best_model_file = os.path.join(output_path, 'fold{:02d}.pth'.format(fold_n))
         
@@ -198,7 +263,14 @@ def run(args):
             text_field = data.Field(lower=True)
             label_field = data.Field(sequential=False)
         
-            train_iter, val_iter, test_iter = load_iterators(text_field, label_field, args.batch_size, fold_n, csv_dir)
+            train_iter, val_iter, test_iter = load_iterators(
+                text_field, 
+                label_field, 
+                args.batch_size, 
+                fold_n, 
+                csv_dir, 
+                args.full_training, 
+                args.save_embeddings)
 
             # pretrained embeddings -- word2vec
             word_to_idx = text_field.vocab.stoi 
@@ -219,7 +291,7 @@ def run(args):
             loss_function = nn.NLLLoss()
 
             best_model = model 
-            best_val_acc = 0
+            best_val_loss = float("inf")
             early_stop_idx = 0
             reduce_lr_idx = 0
             print("Training Fold {}...".format(fold_n))
@@ -240,20 +312,25 @@ def run(args):
                 print("Time Elapsed: {:.2f}s".format(end_time - start_time))
                 print("Train - Loss: {:.3f}, Accuracy: {:.2f}".format(loss, acc*100))
 
+                # ignore the validation and test sets for full training
+                if args.full_training:
+                    print()
+                    continue
+
                 with torch.no_grad():
-                    val_loss, val_acc = evaluate(model, val_iter, loss_function)
+                    val_loss, val_acc = val_evaluate(model, val_iter, loss_function)
                     print("Validation - Loss: {:.3f}, Accuracy: {:.2f}".format(val_loss, val_acc*100))
-                    print("Learning rate: {:.3e}".format(optimizer.param_groups[0]['lr']))
+                    print()
                     
-                    if val_acc > best_val_acc:
-                        print("Validation accuracy improved from {:.5f} to {:.5f}. Saving model to {}".format(best_val_acc, val_acc, best_model_file))
+                    if val_loss < best_val_loss:
+                        print("Validation loss improved from {:.5f} to {:.5f}. Saving model to {}".format(best_val_loss, val_loss, best_model_file))
                         
-                        best_val_acc = val_acc
+                        best_val_loss = val_loss
                         best_model = model
 
                         torch.save({
                             "epoch": epoch+1,
-                            "best_val_acc": best_val_acc,
+                            "best_val_loss": best_val_loss,
                             "model": best_model.state_dict(),
                             "optimizer": optimizer.state_dict(),
                         }, best_model_file)
@@ -261,7 +338,7 @@ def run(args):
                         early_stop_idx = 0
                         reduce_lr_idx = 0
                     else:
-                        print("Validation acc did not improve from {:.5f}".format(best_val_acc))
+                        print("Validation loss did not improve from {:.5f}".format(best_val_loss))
                         early_stop_idx += 1
                         reduce_lr_idx += 1
 
@@ -278,12 +355,17 @@ def run(args):
                     
                     print()
 
-            print("Evaluating Fold {}...".format(fold_n))
-            test_loss, test_acc = evaluate(best_model, test_iter, loss_function)
-            print("Test Accuracy: {:.5f}".format(test_acc))
-            print()
+            with torch.no_grad():
+                print("Evaluating Fold {}...".format(fold_n))
+                test_loss, test_acc, gts, preds, sentence_embeddings = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
 
-
+                print("Test Accuracy: {:.5f}".format(test_acc))
+                
+                print(gts)
+                print(preds)
+                matrix = confusion_matrix(gts, preds)
+                print(matrix.diagonal()/matrix.sum(axis=1))
+                exit(0)
 
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)
@@ -294,16 +376,18 @@ def read_args(args):
     parser.add_argument('--seed', dest='seed', type=int, default=22)
     parser.add_argument('--output-dir', dest='output', type=str, default='results')
     parser.add_argument('--word2vec-path', dest='word2vec_path', type=str, default='../../GoogleNews-vectors-negative300.bin')
+    parser.add_argument('--full-training', dest='full_training', action='store_true', help='Train on all available data')
+    parser.add_argument('--save-embeddings', dest='save_embeddings', action='store_true', help='Save embeddings for GNN')
 
     # text parameters
     parser.add_argument('--text-cleaning', dest='text_cleaning', action='store_true', help='clean the data?')
 
     # model training parameters
-    parser.add_argument('--batch-size', dest='batch_size', type=int, default=32)
+    parser.add_argument('--batch-size', dest='batch_size', type=int, default=128)
     parser.add_argument('--epochs', dest='epochs', type=int, default=2)
-    parser.add_argument('--early-stopping', dest='early_stopping', type=int, default=3)
-    parser.add_argument('--lr', dest='lr', type=float, default=2e-5)
-    parser.add_argument('--reduce-lr', dest='reduce_lr', type=int, default=2)
+    parser.add_argument('--early-stopping', dest='early_stopping', type=int, default=1000)
+    parser.add_argument('--lr', dest='lr', type=float, default=1e-3)
+    parser.add_argument('--reduce-lr', dest='reduce_lr', type=int, default=1000)
     parser.add_argument('--num-workers', dest='num_workers', type=int, default=6)
     
     # model parameters
@@ -319,8 +403,8 @@ if __name__ == '__main__':
     print("Experiment configurations")
     print("_____________________")
     print("Model: ", args.model)
-    print("Early Stopping: ", args.early_stopping)
-    print("Reduce Learning Rate: ", args.reduce_lr)
+    print("Dataset: ", args.dataset)
+    print("Epochs", args.epochs)
     print("Learning Rate: ", args.lr) 
     print("Batch size: ", args.batch_size)
     print()
