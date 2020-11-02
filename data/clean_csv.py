@@ -44,7 +44,7 @@ df['party_training'] = party_training
 df = df.sample(frac=1).reset_index(drop=True)
 df['index'] = np.arange(len(df))
 
-df.to_csv(path_or_buf=output_csv_path, header=False, index=False)
+df.to_csv(path_or_buf=output_csv_path, header=False, index=False, encoding='latin1')
 
 index_to_tweetid = {}
 tweetid_to_index = {}
@@ -52,10 +52,10 @@ for index, row in tqdm(df.iterrows()):
     index_to_tweetid[row['index']] = row['tweet_id']
     tweetid_to_index[row['tweet_id']] = row['index']
 
-with open('index_to_tweetid.pkl', 'wb') as f:
+with open('../../index_to_tweetid.pkl', 'wb') as f:
     pickle.dump(index_to_tweetid, f)
 
-with open('tweetid_to_index.pkl', 'wb') as f:
+with open('../../tweetid_to_index.pkl', 'wb') as f:
     pickle.dump(tweetid_to_index, f)
 
 

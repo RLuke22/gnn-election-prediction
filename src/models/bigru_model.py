@@ -1,11 +1,7 @@
-import random
-random.seed(22)
-
 import torch 
 torch.manual_seed(22)
 import torch.nn as nn 
 import torch.nn.functional as F 
-import time 
 
 use_gpus = torch.cuda.is_available()
 if use_gpus:

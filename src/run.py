@@ -20,7 +20,6 @@ from torchtext import data
 from tqdm import tqdm 
 import numpy as np
 import pickle
-import pandas as pd
 
 from models.bigru_model import BIGRU
 
@@ -38,7 +37,7 @@ else:
 
 print('GPU Enabled: {}'.format(use_gpus))
 
-# borrowed from https://github.com/clairett/pytorch-sentiment-classification/blob/master/train_batch.py
+# borrowed from https://github.com/clairett/pytorch-sentiment-classification/
 def load_bin_vec(fname, vocab):
     """
     Loads 300x1 word vecs from Google (Mikolov) word2vec
@@ -63,6 +62,7 @@ def load_bin_vec(fname, vocab):
                 f.read(binary_len)
     return word_vecs
 
+# borrowed from https://github.com/clairett/pytorch-sentiment-classification
 def load_iterators(text_field, label_field, batch_size, fold_n, csv_dir):
     train, val, test = data.TabularDataset.splits(path=csv_dir, train='train{:02d}.csv'.format(fold_n),
                                                   validation='valid{:02d}.csv'.format(fold_n), test='test{:02d}.csv'.format(fold_n), format='csv',
@@ -94,6 +94,7 @@ def reduce_lr_on_plateau(optimizer, factor=.1):
         param_group['lr'] = new_lr
         print('Adjusting learning rate from {:.3e} to {:.3e}'.format(old_lr, new_lr))
 
+# borrowed from https://github.com/clairett/pytorch-sentiment-classification
 def get_accuracy(truth, pred):
     assert len(truth) == len(pred)
     right = 0
@@ -102,6 +103,7 @@ def get_accuracy(truth, pred):
             right += 1.0
     return right / len(truth)
 
+# borrowed from https://github.com/clairett/pytorch-sentiment-classification
 def train_epoch(model, 
                 train_iter, 
                 loss_function, 
@@ -139,6 +141,7 @@ def train_epoch(model,
     acc = get_accuracy(gts, preds)
     return avg_loss, acc
 
+# borrowed from https://github.com/clairett/pytorch-sentiment-classification
 def evaluate(model,
              data,
              loss_function):
@@ -164,7 +167,6 @@ def evaluate(model,
     avg_loss /= len(data)
     acc = get_accuracy(gts, preds)
     return avg_loss, acc
-
 
 def run(args):
 
@@ -282,12 +284,13 @@ def run(args):
             print()
 
 
+
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)
 
     # model selection parameters
-    parser.add_argument('--model', dest='model', type=str, help='bigru, roberta-sentence', default='bigru')
-    parser.add_argument('--dataset', dest='dataset', type=str, default='sentiment140', help='election2020,sentiment140')
+    parser.add_argument('--model', dest='model', type=str, default='bigru', help='bigru')
+    parser.add_argument('--dataset', dest='dataset', type=str, default='election2020', help='election2020,sentiment140')
     parser.add_argument('--seed', dest='seed', type=int, default=22)
     parser.add_argument('--output-dir', dest='output', type=str, default='results')
     parser.add_argument('--word2vec-path', dest='word2vec_path', type=str, default='../../GoogleNews-vectors-negative300.bin')
@@ -296,10 +299,10 @@ def read_args(args):
     parser.add_argument('--text-cleaning', dest='text_cleaning', action='store_true', help='clean the data?')
 
     # model training parameters
-    parser.add_argument('--batch-size', dest='batch_size', type=int, default=128)
-    parser.add_argument('--epochs', dest='epochs', type=int, default=1)
-    parser.add_argument('--early-stopping', dest='early_stopping', type=int, default=4)
-    parser.add_argument('--lr', dest='lr', type=float, default=0.001)
+    parser.add_argument('--batch-size', dest='batch_size', type=int, default=32)
+    parser.add_argument('--epochs', dest='epochs', type=int, default=2)
+    parser.add_argument('--early-stopping', dest='early_stopping', type=int, default=3)
+    parser.add_argument('--lr', dest='lr', type=float, default=2e-5)
     parser.add_argument('--reduce-lr', dest='reduce_lr', type=int, default=2)
     parser.add_argument('--num-workers', dest='num_workers', type=int, default=6)
     
