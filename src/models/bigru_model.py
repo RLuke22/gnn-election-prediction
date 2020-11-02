@@ -13,9 +13,9 @@ if use_gpus:
 else:
     device = torch.device("cpu")
 
-class BILSTM(nn.Module):
+class BIGRU(nn.Module):
     def __init__(self, args, vocab_size):
-        super(BILSTM, self).__init__()
+        super(BIGRU, self).__init__()
 
         self.hidden_dim = args.hidden_dim 
         self.batch_size = args.batch_size 
@@ -23,21 +23,22 @@ class BILSTM(nn.Module):
         self.embedding_dim = args.embedding_dim
 
         self.embedding = nn.Embedding(vocab_size, self.embedding_dim)
-        self.lstm = nn.LSTM(input_size=self.embedding_dim, hidden_size=self.hidden_dim, bidirectional=True)
-
+        self.bn = nn.BatchNorm2d(1)
+        
+        self.gru = nn.GRU(input_size=self.embedding_dim, hidden_size=self.hidden_dim, bidirectional=True)
+        self.dropout_layer = nn.Dropout(self.dropout)
         self.fc = nn.Linear(self.hidden_dim * 2, 2)
     
-    def forward(self, x):
-        
+    def forward(self, x):        
         x = self.embedding(x).view(x.shape[0], self.batch_size, -1)
+        x = self.bn(x.unsqueeze(1)).squeeze(1)
 
         h0 = torch.zeros(2, self.batch_size, self.hidden_dim).to(device)
-        c0 = torch.zeros(2, self.batch_size, self.hidden_dim).to(device)
 
-        rnn, self.hidden = self.lstm(x, (h0, c0))
+        rnn, self.hidden = self.gru(x, (h0))
 
         # only use last states as input to dense layer
-        y = self.fc(rnn[-1])
+        y = self.fc(self.dropout_layer(rnn[-1]))
 
         log_softmax_y = F.log_softmax(y, dim=1)
 

@@ -44,6 +44,14 @@ class DataPreprocessor():
         self.sequence_pattern = r"(.)\1\1+"
         self.seq_replace_pattern = r"\1\1"
         self.lemmatizer = WordNetLemmatizer()
+
+    def clean(self, text_list):
+        cleaned_text = []
+
+        print("Cleaning data...")
+        for tweet in tqdm(text_list):
+            return None
+
         
     def clean(self, text_list):
         cleaned_text = []
