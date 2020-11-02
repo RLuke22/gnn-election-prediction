@@ -3,6 +3,7 @@ import os
 import sys
 import argparse
 import pickle
+import numpy as np
 
 class FollowerDictsEngine():
     def __init__(self, args):
@@ -12,6 +13,8 @@ class FollowerDictsEngine():
         self.tweet_index_dict_file = args.tweet_index_dict_file
         self.tweet_table_csv = args.tweet_table_csv
         self.user_tweet_dict_file = args.user_tweet_dict_file
+        self.d_list_file = args.d_list
+        self.r_list_file = args.r_list
 
     def create_userid_to_tweetids_dict(self):
         userid_to_tweetids = {}
@@ -54,6 +57,7 @@ class FollowerDictsEngine():
         rows_written = 0
         print_every_n = 100000
         for follower_file in self.follower_files:
+            print(follower_file)
             with open(follower_file, newline='') as f:
                 csv_reader = csv.reader(f, delimiter=',')
 
@@ -61,15 +65,13 @@ class FollowerDictsEngine():
                     userid = int(row[0])
                     party  = row[1]
 
-                    if userid not in userid_to_tweetids.keys():
-                        continue
-
-                    for tweetid in userid_to_tweetids[userid]:
-                        index = tweet_index[tweetid]
-                        if party == 'D':
-                            d_list.append(index)
-                        elif party == 'R':
-                            r_list.append(index)
+                    if userid in userid_to_tweetids.keys():
+                        for tweetid in userid_to_tweetids[userid]:
+                            index = tweet_index[tweetid]
+                            if party == 'D':
+                                d_list.append(index)
+                            elif party == 'R':
+                                r_list.append(index)
 
                     rows_written += 1
                     if rows_written % print_every_n == 0:
@@ -84,12 +86,15 @@ class FollowerDictsEngine():
         with open('r_followers_tweets.pkl', 'wb') as handle:
             pickle.dump(r_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--follower-files', dest='follower_files', nargs='+', default=[], help='list of csv follower files')
     parser.add_argument('--tweet-index-dict-file', dest='tweet_index_dict_file', type=str, default='', help='tweet to index dict pickle file')
     parser.add_argument('--tweet-table-csv', dest='tweet_table_csv', type=str, default='', help='tweet table csv file')
     parser.add_argument('--user-tweet-dict-file', dest='user_tweet_dict_file', type=str, default='', help='user to tweetids dict pickle file')
+    parser.add_argument('--d-list', dest='d_list', type=str, default='', help='list of d follower tweets')
+    parser.add_argument('--r-list', dest='r_list', type=str, default='', help='list of r follower tweets')
     return parser.parse_args(args)
 
 if __name__ == '__main__':
@@ -98,6 +103,6 @@ if __name__ == '__main__':
     follower_dicts = FollowerDictsEngine(args)
 
     #follower_dicts.create_userid_to_tweetids_dict()
-    follower_dicts.create_dr_tweet_list()
+    #follower_dicts.create_dr_tweet_list()
     
 
