@@ -102,7 +102,7 @@ class FollowerDictsEngine():
         n_rand_neighbours = 100
         print_every_n = 5000000
 
-        print("Constructing D edges: " + str(len(d_list) * n_rand_neighbours))
+        print("Constructing D edges: " + str(len(d_list) * n_rand_neighbours * 2))
         d_edges = []
         d_edges_created = 0
         for u in d_list:
@@ -112,6 +112,7 @@ class FollowerDictsEngine():
 
             for v in rand_neighbours:
                 d_edges.append((u, v))
+                d_edges.append((v, u))
             d_edges_created += n_rand_neighbours
 
             if d_edges_created % print_every_n == 0:
@@ -130,6 +131,7 @@ class FollowerDictsEngine():
 
             for v in rand_neighbours:
                 r_edges.append((u, v))
+                r_edges.append((v, u))
             r_edges_created += n_rand_neighbours
 
             if r_edges_created % print_every_n == 0:
