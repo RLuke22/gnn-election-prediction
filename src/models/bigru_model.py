@@ -25,7 +25,7 @@ class BIGRU(nn.Module):
         self.dropout_layer = nn.Dropout(self.dropout)
         self.fc = nn.Linear(self.hidden_dim * 2, 2)
     
-    def forward(self, x):        
+    def forward(self, x, follows_d, follows_r):        
         x = self.embedding(x).view(x.shape[0], self.batch_size, -1)
         x = self.bn(x.unsqueeze(1)).squeeze(1)
 

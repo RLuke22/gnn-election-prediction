@@ -64,7 +64,7 @@ def load_bin_vec(fname, vocab):
     return word_vecs
 
 # borrowed from https://github.com/clairett/pytorch-sentiment-classification
-def load_iterators(text_field, label_field, batch_size, fold_n, csv_dir, full_training, save_embeddings):
+def load_iterators(text_field, label_field, follows_d_field, follows_r_field, batch_size, fold_n, csv_dir, full_training, save_embeddings):
 
     if full_training:
         train_csv_name = 'full_data.csv'
@@ -81,9 +81,11 @@ def load_iterators(text_field, label_field, batch_size, fold_n, csv_dir, full_tr
 
     train, val, test = data.TabularDataset.splits(path=csv_dir, train=train_csv_name,
                                                   validation='valid{:02d}.csv'.format(fold_n), test=test_csv_name, format='csv',
-                                                  fields=[('text', text_field), ('label', label_field)])
+                                                  fields=[('text', text_field), ('label', label_field), ('follows_d', follows_d_field), ('follows_r', follows_r_field)])
     text_field.build_vocab(train, val, test)
     label_field.build_vocab(train, val, test)
+    follows_d_field.build_vocab(train, val, test)
+    follows_r_field.build_vocab(train, val, test)
 
     train_iter, val_iter, test_iter = data.BucketIterator.splits((train, val, test),
                 batch_sizes=(batch_size, batch_size, batch_size), sort_key=lambda x: len(x.text), repeat=False, device=device)
@@ -95,8 +97,10 @@ def make_output_path(args):
     model_dir = '{}'.format(args.model)
     if args.full_training:
         model_dir += '_full'
+    if args.reweight_loss:
+        model_dir += '_balanced'
 
-    model_dir += '_{}_{}'.format(args.dropout, args.hidden_dim)
+    model_dir += '_{}'.format(args.hidden_dim)
 
     # create path for model weights and results
     out_dir = os.path.join(args.output, model_dir)
@@ -134,7 +138,7 @@ def train_epoch(model,
     gts = []
     preds = []
     for batch in tqdm(train_iter):
-        text, label = batch.text, batch.label
+        text, label, follows_d, follows_r = batch.text, batch.label, batch.follows_d, batch.follows_r
         
         # decrease class labels by 1
         label.data.sub_(1)
@@ -143,7 +147,7 @@ def train_epoch(model,
         # in case batch size smaller
         model.batch_size = int(label.data.shape[0])
         
-        pred, _ = model(text)
+        pred, _ = model(text, follows_d, follows_r)
         pred_label = pred.data.max(1)[1].cpu().numpy()
         preds += [x for x in pred_label]
         model.zero_grad()
@@ -168,14 +172,14 @@ def val_evaluate(model,
     gts = []
     preds = []
     for batch in data:
-        text, label = batch.text, batch.label
+        text, label, follows_d, follows_r = batch.text, batch.label, batch.follows_d, batch.follows_r
         # decrease class labels by 1
         label.data.sub_(1)
         gts += list(label.data)
         # in case batch size smaller
         model.batch_size = int(label.data.shape[0])
         
-        pred, _ = model(text)
+        pred, _ = model(text, follows_d, follows_r)
         pred_label = pred.data.max(1)[1].cpu().numpy()
         preds += [x for x in pred_label]
         
@@ -205,14 +209,14 @@ def test_evaluate(model,
     
     preds = []
     for batch in tqdm(data):
-        text, label = batch.text, batch.label
+        text, label, follows_d, follows_r = batch.text, batch.label, batch.follows_d, batch.follows_r
         # decrease class labels by 1
         label.data.sub_(1)
         gts += list(label.data)
         # in case batch size smaller
         model.batch_size = int(label.data.shape[0])
         
-        pred, batch_embeddings = model(text)
+        pred, batch_embeddings = model(text, follows_d, follows_r)
         pred_label = pred.data.max(1)[1].cpu().numpy()
         preds += [x for x in pred_label]
 
@@ -231,7 +235,7 @@ def test_evaluate(model,
     gts = [int(x.item()) for x in gts]
 
     if save_embeddings:
-        return avg_loss, acc, gts, preds, sentence_embeddings
+        return sentence_embeddings
     else:
         return avg_loss, acc, gts, preds
 
@@ -248,8 +252,8 @@ def run(args):
     
     elif args.dataset == 'election2020':
         data_loader = Election2020Dataset(args, N_SPLITS)
-        if args.text_cleaning: 
-            csv_dir = '../../election2020_splits_cleaned'
+        if args.save_embeddings: 
+            csv_dir = '../../election2020_splits_embeddings'
         else:
             csv_dir = '../../election2020_splits'
 
@@ -269,15 +273,22 @@ def run(args):
         if args.model == 'bigru':
             text_field = data.Field(lower=True)
             label_field = data.Field(sequential=False)
+            follows_d_field = data.Field(sequential=False)
+            follows_r_field = data.Field(sequential=False)
         
             train_iter, val_iter, test_iter = load_iterators(
                 text_field, 
                 label_field, 
+                follows_d_field,
+                follows_r_field,
                 args.batch_size, 
                 fold_n, 
                 csv_dir, 
                 args.full_training, 
                 args.save_embeddings)
+
+            print("Made it here!")
+            exit(0)
 
             # pretrained embeddings -- word2vec
             word_to_idx = text_field.vocab.stoi 
@@ -369,29 +380,25 @@ def run(args):
                     
                     print()
 
-            with torch.no_grad():
-                print("Evaluating Fold {}...".format(fold_n))
-                
+            with torch.no_grad():                
                 if args.save_embeddings:
-                    test_loss, test_acc, gts, preds, sentence_embeddings = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
+                    print("Saving embeddings...")
+                    sentence_embeddings = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
 
                     # Save the embeddings
                     np.save(os.path.join(output_path, "fold{:02d}.npy".format(fold_n)), sentence_embeddings.cpu().numpy())
                 else:
+                    print("Evaluating Fold {}...".format(fold_n))
                     test_loss, test_acc, gts, preds = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
 
-                print("Test Accuracy: {:.5f}".format(test_acc))
-
-                print(np.sum(np.array(gts)), len(gts))
-                
-                matrix = confusion_matrix(gts, preds)
-                test_acc_d, test_acc_r = matrix.diagonal()/matrix.sum(axis=1)
-                
-                print("Test Accuracy-D: {:.5f}".format(test_acc_d))
-                print("Test Accuracy-R: {:.5f}".format(test_acc_r))
-                print("\n")
-
-                
+                    print("Test Accuracy: {:.5f}".format(test_acc))
+                    
+                    matrix = confusion_matrix(gts, preds)
+                    test_acc_d, test_acc_r = matrix.diagonal()/matrix.sum(axis=1)
+                    
+                    print("Test Accuracy-D: {:.5f}".format(test_acc_d))
+                    print("Test Accuracy-R: {:.5f}".format(test_acc_r))
+                    print("\n")
 
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)

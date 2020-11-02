@@ -97,6 +97,9 @@ for i, row in tqdm(df.iterrows()):
 df['follows_d'] = d_list
 df['follows_r'] = r_list
 
+# remove nan rows
+df = df.dropna(how='any')
+
 df.to_csv(path_or_buf=final_csv_path, header=False, index=False, encoding='latin1')
 
 print("Done.")
