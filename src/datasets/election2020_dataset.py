@@ -51,9 +51,9 @@ class Election2020Dataset():
         df = df.drop(['user_id', 'retweet_user_id', 'party', 'state', 'hashtags', 'keywords', 'index'], axis=1)
 
         # replace R's with 0
-        df['party_training'] = df['party_training'].replace('R',0)
+        df['party_training'] = df['party_training'].replace('R', 0)
         # replace D's with 1
-        df['party_training'] = df['party_training'].replace('D',1)
+        df['party_training'] = df['party_training'].replace('D', 1)
         # Remove U's
         df = df[df.party_training != 'U']
         # remove nan rows

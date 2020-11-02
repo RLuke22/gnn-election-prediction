@@ -201,9 +201,9 @@ def test_evaluate(model,
         # [n_tweets x 2*hidden_dim] (where hidden_dim is hidden dimension in GRU)
         # TODO: remove hardcoded integer
         sentence_embeddings = torch.zeros(122443, hidden_dim * 2)
+        count = 0
     
     preds = []
-    count = 0
     for batch in tqdm(data):
         text, label = batch.text, batch.label
         # decrease class labels by 1
@@ -216,9 +216,10 @@ def test_evaluate(model,
         pred_label = pred.data.max(1)[1].cpu().numpy()
         preds += [x for x in pred_label]
 
-        for x in batch_embeddings:
-            sentence_embeddings[count] = x
-            count += 1
+        if save_embeddings:
+            for x in batch_embeddings:
+                sentence_embeddings[count] = x
+                count += 1
         
         loss = loss_function(pred, label)
         avg_loss += float(loss)
@@ -226,7 +227,13 @@ def test_evaluate(model,
     avg_loss /= len(data)
     acc = get_accuracy(gts, preds)
 
-    return avg_loss, acc, gts, preds, sentence_embeddings
+    # convert from list of torch Tensors to list of integers
+    gts = [int(x.item()) for x in gts]
+
+    if save_embeddings:
+        return avg_loss, acc, gts, preds, sentence_embeddings
+    else:
+        return avg_loss, acc, gts, preds
 
 def run(args):
 
@@ -288,7 +295,14 @@ def run(args):
             model.embedding.weight.data.copy_(torch.from_numpy(pretrained_embeddings))
 
             optimizer = optim.Adam(model.parameters(), lr=args.lr)
-            loss_function = nn.NLLLoss()
+            
+            if args.reweight_loss:
+                prop_R = 37657/122442
+                weight = torch.Tensor([prop_R, 1 - prop_R]).to(device)
+            else:
+                weight = torch.Tensor([1, 1]).to(device)
+ 
+            loss_function = nn.NLLLoss(weight=weight)
 
             best_model = model 
             best_val_loss = float("inf")
@@ -357,15 +371,27 @@ def run(args):
 
             with torch.no_grad():
                 print("Evaluating Fold {}...".format(fold_n))
-                test_loss, test_acc, gts, preds, sentence_embeddings = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
+                
+                if args.save_embeddings:
+                    test_loss, test_acc, gts, preds, sentence_embeddings = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
+
+                    # Save the embeddings
+                    np.save(os.path.join(output_path, "fold{:02d}.npy".format(fold_n)), sentence_embeddings.cpu().numpy())
+                else:
+                    test_loss, test_acc, gts, preds = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
 
                 print("Test Accuracy: {:.5f}".format(test_acc))
+
+                print(np.sum(np.array(gts)), len(gts))
                 
-                print(gts)
-                print(preds)
                 matrix = confusion_matrix(gts, preds)
-                print(matrix.diagonal()/matrix.sum(axis=1))
-                exit(0)
+                test_acc_d, test_acc_r = matrix.diagonal()/matrix.sum(axis=1)
+                
+                print("Test Accuracy-D: {:.5f}".format(test_acc_d))
+                print("Test Accuracy-R: {:.5f}".format(test_acc_r))
+                print("\n")
+
+                
 
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)
@@ -389,6 +415,7 @@ def read_args(args):
     parser.add_argument('--lr', dest='lr', type=float, default=1e-3)
     parser.add_argument('--reduce-lr', dest='reduce_lr', type=int, default=1000)
     parser.add_argument('--num-workers', dest='num_workers', type=int, default=6)
+    parser.add_argument('--reweight-loss', dest='reweight_loss', action='store_true', help='Reweight the loss function?')
     
     # model parameters
     parser.add_argument('--embedding-dim', dest='embedding_dim', type=int, default=300)
@@ -407,6 +434,7 @@ if __name__ == '__main__':
     print("Epochs", args.epochs)
     print("Learning Rate: ", args.lr) 
     print("Batch size: ", args.batch_size)
+    print("Reweight Loss: ", args.reweight_loss)
     print()
 
     run(args)
