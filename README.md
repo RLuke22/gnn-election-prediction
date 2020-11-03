@@ -13,7 +13,7 @@ Due to the Twitter API rate limitations, we can only make predictions for 7 stat
 
 ### Data Collection
 
-We collected nearly 700,000 tweets by sampling from the 7 chosen states proportional to the states' relative populations. One consequence of this sampling procedure is that more densely populated states will account for a larger proportion of the 700,000 tweets. However, in general, the densely populated states have more electoral college votes, so this sampling procedure ensures that the most *important* swing states have the most *robust* predictions. 
+We collected nearly 700,000 tweets by sampling from the 7 chosen states proportional to the their relative populations. One consequence of this sampling procedure is that more densely populated states will account for a larger proportion of the 700,000 tweets. However, in general, the densely populated states have more electoral college votes, so this sampling procedure ensures that the most *important* swing states have the most *robust* predictions. 
 
 To ensure that the collected tweets pertained to the US election, we queried Twitter to match a set of hashtags and keywords related to the US election. The set of keywords/hashtags can be found in supp/hashtags_keywords.txt.
 
