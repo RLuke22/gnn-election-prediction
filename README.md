@@ -25,7 +25,7 @@ Before we could perform any machine learning on the collected Twitter data, we f
 
 As ~400,000 tweets are still unlabelled, we design a machine learning model called *TweetPredict* to make these predictions. *TweetPredict* takes the text content of a tweet as input, and outputs a probability distribution over the two political parties (D/R). Using our heuristically annotated dataset, *TweetPredict* learns to classify tweets as either (D)emocratic or (R)epublican in a fully-supervised manner.
 
-To ensure that the *TweetPredict* model does not simply learn the mapping from hashtag &rarr; political party, we mask all hashtags contained in either h<sub>d</sub> or h<sub>r</sub> as a preprocessing step.
+To ensure that *TweetPredict* does not simply learn the mapping from hashtag &rarr; political party, we mask all hashtags contained in either h<sub>d</sub> or h<sub>r</sub> as a preprocessing step.
 
 In addition to the tweet content, we also wanted our model to leverage the structure in the Twitter social network to guide its predictions. We thus collected a list of popular Democratic and Republican Twitter accounts and extracted all the followers of these accounts using the Twitter API. Due to rate limitations, we were limited to extracting 30,000,000 followers over all the accounts. We thus chose the following accounts: 
 - Democratic: @JoeBiden (11.6M)
