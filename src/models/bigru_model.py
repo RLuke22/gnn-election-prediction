@@ -23,9 +23,9 @@ class BIGRU(nn.Module):
         
         self.gru = nn.GRU(input_size=self.embedding_dim, hidden_size=self.hidden_dim, bidirectional=True)
         self.dropout_layer = nn.Dropout(self.dropout)
-        self.fc = nn.Linear(self.hidden_dim * 2, 2)
+        self.fc = nn.Linear(self.hidden_dim * 2 + 2, 2)
     
-    def forward(self, x, follows_d, follows_r):        
+    def forward(self, x, follows_d, follows_r):                
         x = self.embedding(x).view(x.shape[0], self.batch_size, -1)
         x = self.bn(x.unsqueeze(1)).squeeze(1)
 
@@ -33,10 +33,13 @@ class BIGRU(nn.Module):
 
         rnn, self.hidden = self.gru(x, (h0))
 
-        sentence_embedding = rnn[-1]
+        d = follows_d.unsqueeze(1).type(torch.FloatTensor).to(device)
+        r = follows_r.unsqueeze(1).type(torch.FloatTensor).to(device)
+
+        sentence_embedding = torch.cat((rnn[-1], d, r), dim=1).to(device)
 
         # only use last states as input to dense layer
-        y = self.fc(self.dropout_layer(rnn[-1]))
+        y = self.fc(self.dropout_layer(sentence_embedding))
 
         log_softmax_y = F.log_softmax(y, dim=1)
 
