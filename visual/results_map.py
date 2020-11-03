@@ -118,7 +118,7 @@ class ElectionResultsMap():
                                  'Wyoming': 3 ,
                                  'District of Columbia': 3}
 
-        self.states.apply(lambda x: self.ax.annotate(text="{}: {}".format(x.NAME, electoral_votes_dict[x.NAME]), xy=x.geometry.centroid.coords[0], fontsize=8, fontweight='bold'),axis=1)
+        self.states.apply(lambda x: self.ax.annotate(text=electoral_votes_dict[x.NAME], xy=x.geometry.centroid.coords[0], fontsize=8, fontweight='bold'),axis=1)
     
 
     def color_predicted_states(self):
@@ -128,7 +128,7 @@ class ElectionResultsMap():
         self.states[self.states['NAME']=='Georgia'].plot(ax=self.ax, color='tab:red')
         self.states[self.states['NAME']=='Ohio'].plot(ax=self.ax, color='tab:blue')
         self.states[self.states['NAME']=='Texas'].plot(ax=self.ax, color='tab:red')
-        self.states[self.states['NAME']=='NorthCarolina'].plot(ax=self.ax, color='tab:blue')
+        self.states[self.states['NAME']=='North Carolina'].plot(ax=self.ax, color='tab:blue')
         
     def show(self):        
         plt.savefig('7_states_map.png')
@@ -137,5 +137,6 @@ class ElectionResultsMap():
 if __name__ == '__main__':
     map = ElectionResultsMap()
     map.color_decided_states()
+    map.color_predicted_states()
     map.write_electoral_college_votes()
     map.show()
