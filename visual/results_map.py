@@ -118,15 +118,20 @@ class ElectionResultsMap():
                                  'Wyoming': 3 ,
                                  'District of Columbia': 3}
 
-        self.states.apply(lambda x: self.ax.annotate(text=electoral_votes_dict[x.NAME], xy=x.geometry.centroid.coords[0], fontsize=8, fontweight='bold'),axis=1)
+        self.states.apply(lambda x: self.ax.annotate(text="{}: {}".format(x.NAME, electoral_votes_dict[x.NAME]), xy=x.geometry.centroid.coords[0], fontsize=8, fontweight='bold'),axis=1)
     
 
     def color_predicted_states(self):
-        self.states[self.states['NAME']=='Texas'].plot(ax=self.ax, color='tab:red')
+        self.states[self.states['NAME']=='Arizona'].plot(ax=self.ax, color='tab:blue')
+        self.states[self.states['NAME']=='Iowa'].plot(ax=self.ax, color='tab:red')
+        self.states[self.states['NAME']=='Florida'].plot(ax=self.ax, color='tab:blue')
+        self.states[self.states['NAME']=='Georgia'].plot(ax=self.ax, color='tab:red')
         self.states[self.states['NAME']=='Ohio'].plot(ax=self.ax, color='tab:blue')
+        self.states[self.states['NAME']=='Texas'].plot(ax=self.ax, color='tab:red')
+        self.states[self.states['NAME']=='NorthCarolina'].plot(ax=self.ax, color='tab:blue')
         
     def show(self):        
-        plt.savefig('map.png')
+        plt.savefig('7_states_map.png')
         plt.show()
 
 if __name__ == '__main__':
