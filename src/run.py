@@ -64,12 +64,17 @@ def load_bin_vec(fname, vocab):
     return word_vecs
 
 # borrowed from https://github.com/clairett/pytorch-sentiment-classification
-def load_iterators(text_field, label_field, follows_d_field, follows_r_field, batch_size, fold_n, csv_dir, full_training, save_embeddings):
+def load_iterators(text_field, label_field, follows_d_field, follows_r_field, tweet_index_field, batch_size, fold_n, csv_dir, full_training, save_embeddings, full_inference):
 
     if full_training:
         train_csv_name = 'full_data.csv'
     else:
         train_csv_name = 'train{:02d}.csv'.format(fold_n)
+
+    if full_inference:
+        test_csv_name = 'full_inference_data.csv'
+    else:
+        test_csv_name = 'train{:02d}.csv'.format(fold_n)
 
     # We need all embeddings for GNN. Thus, we still perform 5-fold CV
     # and use the training data at each fold to train the model. Then
@@ -81,11 +86,12 @@ def load_iterators(text_field, label_field, follows_d_field, follows_r_field, ba
 
     train, val, test = data.TabularDataset.splits(path=csv_dir, train=train_csv_name,
                                                   validation='valid{:02d}.csv'.format(fold_n), test=test_csv_name, format='csv',
-                                                  fields=[('text', text_field), ('label', label_field), ('follows_d', follows_d_field), ('follows_r', follows_r_field)])
+                                                  fields=[('text', text_field), ('label', label_field), ('follows_d', follows_d_field), ('follows_r', follows_r_field), ('tweet_index', tweet_index_field)])
     text_field.build_vocab(train, val, test)
     label_field.build_vocab(train, val, test)
     follows_d_field.build_vocab(train, val, test)
     follows_r_field.build_vocab(train, val, test)
+    tweet_index_field.build_vocab(train, val, test)
 
     train_iter, val_iter, test_iter = data.BucketIterator.splits((train, val, test),
                 batch_sizes=(batch_size, batch_size, batch_size), sort_key=lambda x: len(x.text), repeat=False, device=device)
@@ -201,22 +207,31 @@ def test_evaluate(model,
     model.eval()
     avg_loss = 0.0
     gts = []
+    tweet_indices = []
     if save_embeddings:
         # [n_tweets x 2*hidden_dim] (where hidden_dim is hidden dimension in GRU)
         # TODO: remove hardcoded integer
         sentence_embeddings = torch.zeros(122443, hidden_dim * 2)
-        count = 0
     
+    softmax_scores = torch.zeros(122443, 2)
     preds = []
+    count = 0
+    count_softmax = 0
     for batch in tqdm(data):
-        text, label, follows_d, follows_r = batch.text, batch.label, batch.follows_d, batch.follows_r
+        text, label, follows_d, follows_r, tweet_index = batch.text, batch.label, batch.follows_d, batch.follows_r, batch.tweet_index
         # decrease class labels by 1
         label.data.sub_(1)
         gts += list(label.data)
+        tweet_indices += list(tweet_index.data)
         # in case batch size smaller
         model.batch_size = int(label.data.shape[0])
         
         pred, batch_embeddings = model(text, follows_d, follows_r)
+
+        for x in torch.exp(pred):
+            softmax_scores[count_softmax] = x
+            count_softmax += 1
+
         pred_label = pred.data.max(1)[1].cpu().numpy()
         preds += [x for x in pred_label]
 
@@ -224,7 +239,7 @@ def test_evaluate(model,
             for x in batch_embeddings:
                 sentence_embeddings[count] = x
                 count += 1
-        
+
         loss = loss_function(pred, label)
         avg_loss += float(loss)
     
@@ -233,15 +248,73 @@ def test_evaluate(model,
 
     # convert from list of torch Tensors to list of integers
     gts = [int(x.item()) for x in gts]
+    tweet_indices = [int(x.item()) for x in tweet_indices]
 
     if save_embeddings:
         return sentence_embeddings
     else:
-        return avg_loss, acc, gts, preds
+        return avg_loss, acc, gts, preds, tweet_indices, softmax_scores
+
+def write_results(tweet_indices, preds, softmax_scores):
+    print("Saving results to CSV")
+    write_csv_path = '../../results.csv'
+    read_csv_path = '../../data.csv'
+
+    df = pd.read_csv(read_csv_path, header=None, encoding='utf-8')
+    df.columns = [
+        'tweet_id', 
+        'user_id', 
+        'retweet_user_id', 
+        'text', 
+        'party',
+        'state', 
+        'hashtags', 
+        'keywords',
+        'party_training',
+        'index',
+        'follows_d',
+        'follows_r'
+    ]
+
+    assert len(df) == len(tweet_indices)
+
+    results = []
+    d_prob = []
+    r_prob = []
+    for i, row in tqdm(df.iterrows()):
+        ind = tweet_indices.index(row['index'])
+
+        # use ground truth label if it exists
+        if row['party_training'] != 'U':
+            results.append(row['party_training'])
+            if row['party_training'] == 'R':
+                d_prob.append(0.0)
+                r_prob.append(1.0)
+            else:
+                d_prob.append(1.0)
+                r_prob.append(0.0)
+        else:
+            results.append('D') if int(preds[ind]) == 0 else results.append('R')
+            d_prob.append(softmax_scores[ind][0])
+            r_prob.append(softmax_scores[ind][1])
+
+    assert len(df) == len(results) == len(d_prob) == len(r_prob)
+
+    df['d_prob'] = d_prob
+    df['r_prob'] = r_prob
+    df['results'] = results
+
+    df.to_csv(path_or_buf=write_csv_path, header=False, index=False, encoding='latin1')
 
 def run(args):
 
     N_SPLITS = 5
+
+    five_fold_test_acc = []
+    five_fold_test_acc_d = []
+    five_fold_test_acc_r = []
+
+    full_results = []
 
     if args.dataset == 'sentiment140':
         data_loader = Sentiment140Dataset(args, N_SPLITS)
@@ -275,20 +348,21 @@ def run(args):
             label_field = data.Field(sequential=False)
             follows_d_field = data.Field(sequential=False)
             follows_r_field = data.Field(sequential=False)
+            tweet_index_field = data.Field(sequential=False)
         
             train_iter, val_iter, test_iter = load_iterators(
                 text_field, 
                 label_field, 
                 follows_d_field,
                 follows_r_field,
+                tweet_index_field,
                 args.batch_size, 
                 fold_n, 
                 csv_dir, 
                 args.full_training, 
-                args.save_embeddings)
-
-            print("Made it here!")
-            exit(0)
+                args.save_embeddings,
+                args.full_inference
+            )
 
             # pretrained embeddings -- word2vec
             word_to_idx = text_field.vocab.stoi 
@@ -308,7 +382,7 @@ def run(args):
             optimizer = optim.Adam(model.parameters(), lr=args.lr)
             
             if args.reweight_loss:
-                prop_R = 37657/122442
+                prop_R = args.d_weight
                 weight = torch.Tensor([prop_R, 1 - prop_R]).to(device)
             else:
                 weight = torch.Tensor([1, 1]).to(device)
@@ -389,8 +463,8 @@ def run(args):
                     np.save(os.path.join(output_path, "fold{:02d}.npy".format(fold_n)), sentence_embeddings.cpu().numpy())
                 else:
                     print("Evaluating Fold {}...".format(fold_n))
-                    test_loss, test_acc, gts, preds = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
-
+                    test_loss, test_acc, gts, preds, tweet_indices, softmax_scores = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
+                    
                     print("Test Accuracy: {:.5f}".format(test_acc))
                     
                     matrix = confusion_matrix(gts, preds)
@@ -399,6 +473,21 @@ def run(args):
                     print("Test Accuracy-D: {:.5f}".format(test_acc_d))
                     print("Test Accuracy-R: {:.5f}".format(test_acc_r))
                     print("\n")
+
+                    five_fold_test_acc.append(test_acc)
+                    five_fold_test_acc_d.append(test_acc_d)
+                    five_fold_test_acc_r.append(test_acc_r)
+
+                    if self.full_inference:
+                        write_results(list(tweet_indices), list(preds), softmax_scores)                          
+
+
+    print("Final Results")
+    print("------------------------------------")
+    print("Test Accuracy: ", np.mean(np.array(five_fold_test_acc)))
+    print("Test Accuracy-D: ", np.mean(np.array(five_fold_test_acc_d)))
+    print("Test Accuracy-R: ", np.mean(np.array(five_fold_test_acc_r)))
+    print("------------------------------------")
 
 def read_args(args):
     parser = argparse.ArgumentParser(description=__doc__)
@@ -409,7 +498,8 @@ def read_args(args):
     parser.add_argument('--seed', dest='seed', type=int, default=22)
     parser.add_argument('--output-dir', dest='output', type=str, default='results')
     parser.add_argument('--word2vec-path', dest='word2vec_path', type=str, default='../../GoogleNews-vectors-negative300.bin')
-    parser.add_argument('--full-training', dest='full_training', action='store_true', help='Train on all available data')
+    parser.add_argument('--full-training', dest='full_training', action='store_true', help='Train on all available training data')
+    parser.add_argument('--full-inference', dest='full_inference', action='store_true', help='Run inference on all available data (including unlabelled data')
     parser.add_argument('--save-embeddings', dest='save_embeddings', action='store_true', help='Save embeddings for GNN')
 
     # text parameters
@@ -422,6 +512,7 @@ def read_args(args):
     parser.add_argument('--lr', dest='lr', type=float, default=1e-3)
     parser.add_argument('--reduce-lr', dest='reduce_lr', type=int, default=1000)
     parser.add_argument('--num-workers', dest='num_workers', type=int, default=6)
+    parser.add_argument('--d-weight', dest='d_weight', type=float, default=37657/122442)
     parser.add_argument('--reweight-loss', dest='reweight_loss', action='store_true', help='Reweight the loss function?')
     
     # model parameters
@@ -442,6 +533,8 @@ if __name__ == '__main__':
     print("Learning Rate: ", args.lr) 
     print("Batch size: ", args.batch_size)
     print("Reweight Loss: ", args.reweight_loss)
+    if args.reweight_loss:
+        print("D Weight: ", args.d_weight)
     print()
 
     run(args)
