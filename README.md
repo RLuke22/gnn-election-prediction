@@ -22,3 +22,7 @@ To ensure that the collected tweets pertained to the US election, we queried Twi
 **The prediction task is simple: Given a tweet, is the tweet in support of the Democratic party (D) or the Republican party (R)?**
 
 Before we could perform any machine learning on the collected Twitter data, we first needed a way to heuristically annotate a subset of the data. To achieve this, we created two hashtag lists: *hashtag_list_d* and *hashtag_list_r*. Each hashtag list contains a subset of the querying hashtags which clearly indicate support for the Democratic and Republican parties, respectively. We then assign an R label to every tweet which contains a hashtag in *hashtag_list_r*, but not *hashtag_list_d*, and similarly assign a D label to every tweet which contains a hashtag in *hashtag_list_d*, but not *hashtag_list_r*. This gave us an annotated dataset of ~250,000 tweets.
+
+To solve the predictive task, we design a machine learning model which we call *TweetPredict*. *TweetPredict* takes the text content of a tweet as input, and outputs a probability distribution over the two political parties (D/R). Using our heuristically labelled dataset and Stochastic Gradient Descent, the machine learning model learns to classify tweets as either (D)emocratic or (R)epublican in a fully-supervised manner.
+
+To ensure that the *TweetPredict* model does not simply learn the mapping from hashtag --> political party, we mask all hashtags contained in either *hashtag_list_d* or *hashtag_list_r* as a preprocessing step. 
