@@ -9,6 +9,7 @@ from numpy.random import seed
 seed(22)
 
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 torch.manual_seed(22)
@@ -74,24 +75,24 @@ def load_iterators(text_field, label_field, follows_d_field, follows_r_field, tw
     if full_inference:
         test_csv_name = 'full_inference_data.csv'
     else:
-        test_csv_name = 'train{:02d}.csv'.format(fold_n)
-
-    # We need all embeddings for GNN. Thus, we still perform 5-fold CV
-    # and use the training data at each fold to train the model. Then
-    # perform inference on all the data (Note full_data.csv is simply a csv containing all data train/val/test)
-    if save_embeddings:
-        test_csv_name = 'full_data.csv'
-    else:
         test_csv_name = 'test{:02d}.csv'.format(fold_n)
+
+    # # We need all embeddings for GNN. Thus, we still perform 5-fold CV
+    # # and use the training data at each fold to train the model. Then
+    # # perform inference on all the data (Note full_data.csv is simply a csv containing all data train/val/test)
+    # if save_embeddings:
+    #     test_csv_name = 'full_data.csv'
+    # else:
+    #     test_csv_name = 'test{:02d}.csv'.format(fold_n)
 
     train, val, test = data.TabularDataset.splits(path=csv_dir, train=train_csv_name,
                                                   validation='valid{:02d}.csv'.format(fold_n), test=test_csv_name, format='csv',
                                                   fields=[('text', text_field), ('label', label_field), ('follows_d', follows_d_field), ('follows_r', follows_r_field), ('tweet_index', tweet_index_field)])
+    
     text_field.build_vocab(train, val, test)
     label_field.build_vocab(train, val, test)
     follows_d_field.build_vocab(train, val, test)
     follows_r_field.build_vocab(train, val, test)
-    tweet_index_field.build_vocab(train, val, test)
 
     train_iter, val_iter, test_iter = data.BucketIterator.splits((train, val, test),
                 batch_sizes=(batch_size, batch_size, batch_size), sort_key=lambda x: len(x.text), repeat=False, device=device)
@@ -199,10 +200,10 @@ def val_evaluate(model,
 
 # borrowed from https://github.com/clairett/pytorch-sentiment-classification
 def test_evaluate(model,
-             data,
-             loss_function,
-             save_embeddings,
-             hidden_dim):
+                data,
+                loss_function,
+                save_embeddings,
+                hidden_dim):
     
     model.eval()
     avg_loss = 0.0
@@ -213,7 +214,7 @@ def test_evaluate(model,
         # TODO: remove hardcoded integer
         sentence_embeddings = torch.zeros(122443, hidden_dim * 2)
     
-    softmax_scores = torch.zeros(122443, 2)
+    softmax_scores = torch.zeros(655027, 2)
     preds = []
     count = 0
     count_softmax = 0
@@ -221,8 +222,9 @@ def test_evaluate(model,
         text, label, follows_d, follows_r, tweet_index = batch.text, batch.label, batch.follows_d, batch.follows_r, batch.tweet_index
         # decrease class labels by 1
         label.data.sub_(1)
+
         gts += list(label.data)
-        tweet_indices += list(tweet_index.data)
+        tweet_indices += [int(m) for m in list(tweet_index.data)]
         # in case batch size smaller
         model.batch_size = int(label.data.shape[0])
         
@@ -248,7 +250,6 @@ def test_evaluate(model,
 
     # convert from list of torch Tensors to list of integers
     gts = [int(x.item()) for x in gts]
-    tweet_indices = [int(x.item()) for x in tweet_indices]
 
     if save_embeddings:
         return sentence_embeddings
@@ -260,7 +261,7 @@ def write_results(tweet_indices, preds, softmax_scores):
     write_csv_path = '../../results.csv'
     read_csv_path = '../../data.csv'
 
-    df = pd.read_csv(read_csv_path, header=None, encoding='utf-8')
+    df = pd.read_csv(read_csv_path, header=None, encoding='latin1')
     df.columns = [
         'tweet_id', 
         'user_id', 
@@ -281,13 +282,19 @@ def write_results(tweet_indices, preds, softmax_scores):
     results = []
     d_prob = []
     r_prob = []
+
+    # convert to dict for O(1) processing
+    tweet_indices_dict = {}
+    for i, ind in enumerate(tweet_indices):
+        tweet_indices_dict[ind] = i
+
     for i, row in tqdm(df.iterrows()):
-        ind = tweet_indices.index(row['index'])
+        ind = tweet_indices_dict[row['index']]
 
         # use ground truth label if it exists
-        if row['party_training'] != 'U':
-            results.append(row['party_training'])
-            if row['party_training'] == 'R':
+        if row['party'] != 'U':
+            results.append(row['party'])
+            if row['party'] == 'R':
                 d_prob.append(0.0)
                 r_prob.append(1.0)
             else:
@@ -298,7 +305,7 @@ def write_results(tweet_indices, preds, softmax_scores):
             d_prob.append(softmax_scores[ind][0])
             r_prob.append(softmax_scores[ind][1])
 
-    assert len(df) == len(results) == len(d_prob) == len(r_prob)
+    assert len(results) == len(d_prob) == len(r_prob)
 
     df['d_prob'] = d_prob
     df['r_prob'] = r_prob
@@ -348,7 +355,7 @@ def run(args):
             label_field = data.Field(sequential=False)
             follows_d_field = data.Field(sequential=False)
             follows_r_field = data.Field(sequential=False)
-            tweet_index_field = data.Field(sequential=False)
+            tweet_index_field = data.Field(sequential=False, use_vocab=False, dtype=torch.float)
         
             train_iter, val_iter, test_iter = load_iterators(
                 text_field, 
@@ -478,7 +485,7 @@ def run(args):
                     five_fold_test_acc_d.append(test_acc_d)
                     five_fold_test_acc_r.append(test_acc_r)
 
-                    if self.full_inference:
+                    if args.full_inference:
                         write_results(list(tweet_indices), list(preds), softmax_scores)                          
 
 
