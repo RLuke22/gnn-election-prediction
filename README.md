@@ -29,7 +29,7 @@ To ensure that *TweetPredict* does not simply learn the mapping from hashtag &ra
 
 In addition to the tweet content, we also wanted our model to leverage the structure in the Twitter social network to guide its predictions. We thus collected a list of popular Democratic and Republican Twitter accounts and extracted all the followers of these accounts using the Twitter API. Due to rate limitations, we were limited to extracting 30,000,000 followers over all the accounts. We thus chose the following accounts: 
 - Democratic: @JoeBiden (11.6M)
-- Republican @Mike_Pence (5.4M), @seanhannity (5.3M), @TuckerCarlson (4.2M), @TeamTrump (2.3M)
+- Republican: @Mike_Pence (5.4M), @seanhannity (5.3M), @TuckerCarlson (4.2M), @TeamTrump (2.3M)
 
 We then matched the user accounts of the extracted tweets to the followers of these 5 accounts. In total, 80.7% of the extracted tweets were posted by a user who follows at least one of the above accounts. For each tweet, we create a 2-dimensional binary vector which encodes whether the user who posted the tweet follows a Democratic and/or a Republican account. We revised our *TweetPredict* model to include these Follower Features (FF), which we call *TweetPredict + FF*. The *TweetPredict + FF* model is shown in the Figure below:
 
