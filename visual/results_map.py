@@ -10,7 +10,7 @@ class ElectionResultsMap():
         self.fig = plt.figure(1, figsize=(12, 12))
         self.ax = self.fig.add_subplot() 
 
-        self.states.boundary.plot(ax=self.ax, color='Black', linewidth=0.4)
+        self.states.boundary.plot(ax=self.ax, color='Black', linewidth=0.4, alpha=0.3)
         self.states.plot(ax=self.ax, color='whitesmoke', figsize=(12, 12))
 
     def color_decided_states(self):
@@ -62,8 +62,64 @@ class ElectionResultsMap():
 
         #additional_states = '\n'.join(('* Alaska is Republican (Red)', '* Hawaii is Democrat (Blue)'))
         
-        self.ax.text(0.02, 0.20, '* Alaska is Republican', transform=self.ax.transAxes, fontsize=14, verticalalignment='top', bbox=dict(boxstyle='square', facecolor='tab:red', alpha=0.9))
-        self.ax.text(0.02, 0.10, '* Hawaii is Democrat', transform=self.ax.transAxes, fontsize=14, verticalalignment='top', bbox=dict(boxstyle='square', facecolor='tab:blue', alpha=0.9))
+        self.ax.text(0.02, 0.20, '* Alaska (3) is Republican', transform=self.ax.transAxes, fontsize=14, verticalalignment='top', bbox=dict(boxstyle='square', facecolor='tab:red', alpha=0.9))
+        self.ax.text(0.02, 0.10, '* Hawaii (4) is Democrat', transform=self.ax.transAxes, fontsize=14, verticalalignment='top', bbox=dict(boxstyle='square', facecolor='tab:blue', alpha=0.9))
+
+    def write_electoral_college_votes(self):
+        electoral_votes_dict = { 'California': 55,
+                                 'Texas': 38,
+                                 'Florida': 29,
+                                 'New York': 29,
+                                 'Pennsylvania': 20,
+                                 'Illinois': 20,
+                                 'Ohio': 18,
+                                 'Michigan': 16,
+                                 'Georgia': 16,
+                                 'North Carolina': 15,
+                                 'New Jersey': 14,
+                                 'Virginia': 13,
+                                 'Washington': 12,
+                                 'Arizona': 11,
+                                 'Indiana': 11,
+                                 'Massachusetts': 11,
+                                 'Tennessee': 11,
+                                 'Maryland': 10,
+                                 'Minnesota': 10,
+                                 'Missouri': 10,
+                                 'Wisconsin': 10,
+                                 'Alabama': 9,
+                                 'Colorado': 9,
+                                 'South Carolina': 9,
+                                 'Kentucky': 8,
+                                 'Louisiana': 8,
+                                 'Connecticut': 7,
+                                 'Oklahoma': 7,
+                                 'Oregon': 7,
+                                 'Arkansas': 6,
+                                 'Iowa': 6,
+                                 'Kansas': 6,
+                                 'Mississippi': 6,
+                                 'Nevada': 6,
+                                 'Utah': 6,
+                                 'Nebraska': 5,
+                                 'New Mexico': 5,
+                                 'West Virginia': 5,
+                                 'Hawaii': 4,
+                                 'Idaho': 4,
+                                 'Maine': 4,
+                                 'New Hampshire': 4,
+                                 'Rhode Island': 4,
+                                 'Alaska': 3,
+                                 'Delaware': 3,
+                                 'Montana': 3,
+                                 'North Dakota': 3,
+                                 'South Dakota': 3,
+                                 'Vermont': 3,
+                                 'Wyoming': 3 ,
+                                 'District of Columbia': 3}
+
+        self.states.apply(lambda x: self.ax.annotate(text=electoral_votes_dict[x.NAME], xy=x.geometry.centroid.coords[0], fontsize=8, fontweight='bold'),axis=1)
+    
 
     def color_predicted_states(self):
         self.states[self.states['NAME']=='Texas'].plot(ax=self.ax, color='tab:red')
@@ -76,4 +132,5 @@ class ElectionResultsMap():
 if __name__ == '__main__':
     map = ElectionResultsMap()
     map.color_decided_states()
+    map.write_electoral_college_votes()
     map.show()
