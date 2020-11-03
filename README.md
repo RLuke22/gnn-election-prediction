@@ -4,10 +4,13 @@ Over the last 14 days, we analyzed political trends on Twitter in 7 purported sw
 
 We aggregated the tweets from each state to determine our per-state predictions. The predictions for these states are shown in the map below:
 
+![image](visual/model_image/map1.PNG)
 
 Due to the Twitter API rate limitations, we can only make predictions for 7 states; for the remaining 43 states, we use the FiveThirtyEight predictions (https://projects.fivethirtyeight.com/2020-election-forecast/). FiveThirtyEight reports at least 80% confidence in each of the 43 remaining states. Our full election prediction map is shown below:
 
-# Predicted Winner: Joe Biden (420 D / 180 R)
+![image](visual/model_image/map2.PNG)
+
+# Predicted Winner: Joe Biden (353 D / 185 R)
 
 ## For more interested readers, please continue reading!
 
