@@ -13,7 +13,7 @@ Due to the Twitter API rate limitations, we can only make predictions for 7 stat
 
 ### Data Collection
 
-We collected nearly 700,000 tweets by sampling from the 7 chosen states proportional to each state's population. One consequence of this sampling procedure is that more densely populated states will account for a larger proportion of the 700,000 tweets. However, in general, the densely populated states will have more electoral college votes, so with this sampling procedure the most *important* swing states will have the most *robust* predictions.
+We collected nearly 700,000 tweets by sampling from the 7 chosen states proportional to each state's population. One consequence of this sampling procedure is that more densely populated states will take up a larger proportion of the 700,000 tweets. However, in general, the densely populated states have more electoral college votes, so this sampling procedure ensures that the most *important* swing states have the most *robust* predictions.
 
 To ensure that the collected tweets pertained to the US election, we queried Twitter to match a set of hashtags and keywords related to the US election. The set of keywords/hashtags can be found in supp/hashtags_keywords.txt.
 
@@ -21,8 +21,16 @@ To ensure that the collected tweets pertained to the US election, we queried Twi
 
 **The prediction task is simple: Given a tweet, is the tweet in support of the Democratic party (D) or the Republican party (R)?**
 
-Before we could perform any machine learning on the collected Twitter data, we first needed a way to heuristically annotate a subset of the data. To achieve this, we created two hashtag lists: *hashtag_list_d* and *hashtag_list_r*. Each hashtag list contains a subset of the querying hashtags which clearly indicate support for the Democratic and Republican parties, respectively. We then assign an R label to every tweet which contains a hashtag in *hashtag_list_r*, but not *hashtag_list_d*, and similarly assign a D label to every tweet which contains a hashtag in *hashtag_list_d*, but not *hashtag_list_r*. This gave us an annotated dataset of ~250,000 tweets.
+Before we could perform any machine learning on the collected Twitter data, we first needed a way to heuristically annotate a subset of the data. To achieve this, we created two hashtag lists: *hashtag_list_d* and *hashtag_list_r*. Each hashtag list contains a subset of the querying hashtags which clearly indicate support for the Democratic and Republican parties, respectively. We then assign an R label to every tweet which contains a hashtag in *hashtag_list_r*, but not *hashtag_list_d*, and similarly assign a D label to every tweet which contains a hashtag in *hashtag_list_d*, but not *hashtag_list_r*. This gave us an annotated dataset of ~250,000 tweets. *ihashtag_list_d* and *hashtag_list_r* can be found in supp/hashtags_keywords.txt.
 
-To solve the predictive task, we design a machine learning model which we call *TweetPredict*. *TweetPredict* takes the text content of a tweet as input, and outputs a probability distribution over the two political parties (D/R). Using our heuristically labelled dataset and Stochastic Gradient Descent, the machine learning model learns to classify tweets as either (D)emocratic or (R)epublican in a fully-supervised manner.
+AS ~450,000 tweets are still unlabelled, we design a machine learning model called *TweetPredict* to make these predictions. *TweetPredict* takes the text content of a tweet as input, and outputs a probability distribution over the two political parties (D/R). Using our heuristically annotated dataset, the machine learning model learns to classify tweets as either (D)emocratic or (R)epublican in a fully-supervised manner.
 
-To ensure that the *TweetPredict* model does not simply learn the mapping from hashtag --> political party, we mask all hashtags contained in either *hashtag_list_d* or *hashtag_list_r* as a preprocessing step. 
+To ensure that the *TweetPredict* model does not simply learn the mapping from hashtag &rarr; political party, we mask all hashtags contained in either *hashtag_list_d* or *hashtag_list_r* as a preprocessing step.
+
+In addition to the tweet content, we also wanted our model to leverage the structure in the Twitter social network to guide its predictions. We thus collected a list of popular Democratic and Republican Twitter accounts and extracted all the followers of these accounts using the Twitter API. Due to rate limitations, we were limited to extracting 30,000,000 followers over all the accounts. We thus chose the following accounts: 
+- Democratic: @JoeBiden (11.6M)
+- Republican @Mike_Pence (5.4M), @seanhannity (5.6M), @TuckerCarlson (4.2M), @TeamTrump (2.5M)
+
+We then matched the user accounts of the 700,000 tweets to the followers of these popular accounts. In total, 80.7% of the extracted tweets were posted by a user who follows at least one of the above popular accounts. The intuition is that a user who follows a Democratic (Republican) account is more likely to post a tweet that is pro-Democratic (Republican). We revised our *TweetPredict* model to include these Followers Features (FF); the *TweetPredict* model with FF features is called *TweetPredict + FF*. The *TweetPredict + FF* model is shown in the Figure below:
+
+![image](visual/model_image/model_image.PNG)
