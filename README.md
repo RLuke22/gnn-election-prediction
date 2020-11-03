@@ -2,7 +2,7 @@
 
 Over the last 14 days, we analyzed political trends on Twitter in 7 purported swing states: Arizona, Iowa, Florida, Georgia, Ohio, Texas, and North Carolina. We extracted close to 700,000 political tweets -- each geotagged to one of the seven above-mentioned states -- and used machine learning to assign a political label (Democratic/Republican) to each tweet.
 
-We aggregated the tweets from each state to determine our per-state predictions. The predictions for these states are shown in the map below:
+We aggregated the tweets from each state to determine our per-state predictions. The predictions for these states are shown in the map below. The exact D/R counts of each state can be found in results/Prediction2.ipynb:
 
 ![image](visual/model_image/map1.PNG)
 
