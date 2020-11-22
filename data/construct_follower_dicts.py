@@ -99,8 +99,8 @@ class FollowerDictsEngine():
         with open(self.r_list_file, 'rb') as handle:
             r_list = pickle.load(handle)
 
-        n_rand_neighbours = 100
-        print_every_n = 5000000
+        n_rand_neighbours = 10
+        print_every_n = 1000000
 
         print("Constructing D edges: " + str(len(d_list) * n_rand_neighbours * 2))
         d_edges = []
@@ -118,7 +118,7 @@ class FollowerDictsEngine():
             if d_edges_created % print_every_n == 0:
                 print(d_edges_created)
 
-        with open('d_edge_list.pkl', 'wb') as handle:
+        with open('../../d_edge_list.pkl', 'wb') as handle:
             pickle.dump(d_edges, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         print("Constructing R edges: " + str(len(r_list) * n_rand_neighbours))
@@ -137,7 +137,7 @@ class FollowerDictsEngine():
             if r_edges_created % print_every_n == 0:
                 print(r_edges_created)        
         
-        with open('r_edge_list.pkl', 'wb') as handle:
+        with open('../../r_edge_list.pkl', 'wb') as handle:
             pickle.dump(r_edges, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 

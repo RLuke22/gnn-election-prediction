@@ -23,10 +23,7 @@ class Election2020Dataset():
         self.full_inference = args.full_inference
         self.save_embeddings = args.save_embeddings
 
-        if self.save_embeddings:
-            self.output_csv_dir = '../../election2020_splits_embeddings'
-        else:
-            self.output_csv_dir = '../../election2020_splits'
+        self.output_csv_dir = '../../election2020_splits'
 
         if not os.path.exists(self.output_csv_dir):
             os.mkdir(self.output_csv_dir)
@@ -59,6 +56,8 @@ class Election2020Dataset():
         # replace D's with 1
         df['party_training'] = df['party_training'].replace('D', 1)
 
+        # When running full inference, we make label predictions for all data, including the unlaballed (U) data
+        # When extracting the embeddings for the GNN, we need embeddings for ALL tweets, including the unlabelled (U) data
         if not self.save_embeddings and not self.full_inference:
             # Remove U's
             df = df[df.party_training != 'U']
@@ -82,7 +81,7 @@ class Election2020Dataset():
 
     def gen_splits(self):        
         # only run full inference after the rest of the dataset is created
-        if self.full_inference:
+        if self.full_inference or self.save_embeddings:
             # Five folds, each fold has a train, test, validation set
             if len(os.listdir(self.output_csv_dir)) == 3 * 5 + 2:
                 return  
@@ -99,7 +98,7 @@ class Election2020Dataset():
             print("Data sizes:")
             print(len(X), len(y), len(d), len(r), len(t))
 
-            print("Constructing full training set...", end="")
+            print("Constructing full evaluation dataset...", end="")
             with open(os.path.join(self.output_csv_dir, 'full_inference_data.csv'), 'w') as csv_file:
                 writer = csv.DictWriter(csv_file, fieldnames=['text', 'party', 'follows_d', 'follows_r', 'tweet_index'])
                 
@@ -131,8 +130,10 @@ class Election2020Dataset():
         print("Data sizes:")
         print(len(X), len(y), len(d), len(r), len(t))
 
-        print("Constructing full training set...", end="")
-        with open(os.path.join(self.output_csv_dir, 'full_data.csv'), 'w') as csv_file:
+        # The full_training_data.csv ONLY INCLUDES labelled data. Thus, when we want to train on ALL labelled
+        # data at the very end (once optimal hyperparameters are chosen, then we can)
+        print("Constructing full dataset...", end="")
+        with open(os.path.join(self.output_csv_dir, 'full_training_data.csv'), 'w') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=['text', 'party', 'follows_d', 'follows_r', 'tweet_index'])
             
             for j in range(len(X)):

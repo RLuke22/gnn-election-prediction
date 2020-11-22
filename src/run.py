@@ -68,22 +68,18 @@ def load_bin_vec(fname, vocab):
 def load_iterators(text_field, label_field, follows_d_field, follows_r_field, tweet_index_field, batch_size, fold_n, csv_dir, full_training, save_embeddings, full_inference):
 
     if full_training:
-        train_csv_name = 'full_data.csv'
+        train_csv_name = 'full_training_data.csv'
     else:
         train_csv_name = 'train{:02d}.csv'.format(fold_n)
 
-    if full_inference:
+    # We need all embeddings for GNN. Thus, we still perform 5-fold CV
+    # and use the training data at each fold to train the model. Then
+    # perform inference on all the data (Note full_inference_data.csv is simply a csv containing all data
+    # including the unlabelled (U) data).
+    if full_inference or save_embeddings:
         test_csv_name = 'full_inference_data.csv'
     else:
         test_csv_name = 'test{:02d}.csv'.format(fold_n)
-
-    # # We need all embeddings for GNN. Thus, we still perform 5-fold CV
-    # # and use the training data at each fold to train the model. Then
-    # # perform inference on all the data (Note full_data.csv is simply a csv containing all data train/val/test)
-    # if save_embeddings:
-    #     test_csv_name = 'full_data.csv'
-    # else:
-    #     test_csv_name = 'test{:02d}.csv'.format(fold_n)
 
     train, val, test = data.TabularDataset.splits(path=csv_dir, train=train_csv_name,
                                                   validation='valid{:02d}.csv'.format(fold_n), test=test_csv_name, format='csv',
@@ -211,8 +207,8 @@ def test_evaluate(model,
     tweet_indices = []
     if save_embeddings:
         # [n_tweets x 2*hidden_dim] (where hidden_dim is hidden dimension in GRU)
-        # TODO: remove hardcoded integer
-        sentence_embeddings = torch.zeros(122443, hidden_dim * 2)
+        # The +2 is for the 2-dimensional follower features
+        sentence_embeddings = torch.zeros(655027, hidden_dim * 2 + 2)
     
     softmax_scores = torch.zeros(655027, 2)
     preds = []
@@ -252,7 +248,7 @@ def test_evaluate(model,
     gts = [int(x.item()) for x in gts]
 
     if save_embeddings:
-        return sentence_embeddings
+        return sentence_embeddings, tweet_indices
     else:
         return avg_loss, acc, gts, preds, tweet_indices, softmax_scores
 
@@ -284,6 +280,8 @@ def write_results(tweet_indices, preds, softmax_scores):
     r_prob = []
 
     # convert to dict for O(1) processing
+    # key: tweet_id
+    # value: index of test iterator (order data was evaluated)
     tweet_indices_dict = {}
     for i, ind in enumerate(tweet_indices):
         tweet_indices_dict[ind] = i
@@ -313,6 +311,49 @@ def write_results(tweet_indices, preds, softmax_scores):
 
     df.to_csv(path_or_buf=write_csv_path, header=False, index=False, encoding='latin1')
 
+def write_embeddings(tweet_embeddings, tweet_indices, output_path, fold_n):
+    # Check that all tweets got included
+    df = pd.read_csv('../../data.csv', header=None, encoding='latin1')
+    df.columns = [
+        'tweet_id', 
+        'user_id', 
+        'retweet_user_id', 
+        'text', 
+        'party',
+        'state', 
+        'hashtags', 
+        'keywords',
+        'party_training',
+        'index',
+        'follows_d',
+        'follows_r'
+    ]
+    assert len(df) == len(tweet_indices)
+
+    # convert to dict for O(1) processing
+    # key: tweet_id
+    # value: index of test iterator (order data was evaluated)
+    tweet_indices_dict = {}
+    for i, ind in enumerate(tweet_indices):
+        tweet_indices_dict[ind] = i
+    
+    # Ensure the tweet ids are the same
+    assert set(tweet_indices_dict.keys()) == set(df['index'])
+
+    # Order in increasing order of tweet index
+    reordered_embeddings = torch.zeros(tweet_embeddings.shape)
+    for i, tweet_id in enumerate(df['index']):
+        reordered_embeddings[i] = tweet_embeddings[tweet_indices_dict[tweet_id]]
+
+    # Save the embeddings
+    np.save(os.path.join(output_path, "fold{:02d}_embeddings.npy".format(fold_n)), reordered_embeddings.cpu().numpy())
+
+    # Print sample
+    print("Embeddings Sample: ")
+    print(reordered_embeddings[0])
+        
+    
+
 def run(args):
 
     N_SPLITS = 5
@@ -332,10 +373,7 @@ def run(args):
     
     elif args.dataset == 'election2020':
         data_loader = Election2020Dataset(args, N_SPLITS)
-        if args.save_embeddings: 
-            csv_dir = '../../election2020_splits_embeddings'
-        else:
-            csv_dir = '../../election2020_splits'
+        csv_dir = '../../election2020_splits'
 
     # Output path we write best model to
     output_path = make_output_path(args)
@@ -464,30 +502,28 @@ def run(args):
             with torch.no_grad():                
                 if args.save_embeddings:
                     print("Saving embeddings...")
-                    sentence_embeddings = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
+                    tweet_embeddings, tweet_indices = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
+                    write_embeddings(tweet_embeddings, tweet_indices, output_path, fold_n)
 
-                    # Save the embeddings
-                    np.save(os.path.join(output_path, "fold{:02d}.npy".format(fold_n)), sentence_embeddings.cpu().numpy())
                 else:
                     print("Evaluating Fold {}...".format(fold_n))
                     test_loss, test_acc, gts, preds, tweet_indices, softmax_scores = test_evaluate(best_model, test_iter, loss_function, args.save_embeddings, args.hidden_dim)
-                    
-                    print("Test Accuracy: {:.5f}".format(test_acc))
-                    
-                    matrix = confusion_matrix(gts, preds)
-                    test_acc_d, test_acc_r = matrix.diagonal()/matrix.sum(axis=1)
-                    
-                    print("Test Accuracy-D: {:.5f}".format(test_acc_d))
-                    print("Test Accuracy-R: {:.5f}".format(test_acc_r))
-                    print("\n")
-
-                    five_fold_test_acc.append(test_acc)
-                    five_fold_test_acc_d.append(test_acc_d)
-                    five_fold_test_acc_r.append(test_acc_r)
 
                     if args.full_inference:
-                        write_results(list(tweet_indices), list(preds), softmax_scores)                          
+                        write_results(list(tweet_indices), list(preds), softmax_scores)   
+                    else:
+                        print("Test Accuracy: {:.5f}".format(test_acc))
+                    
+                        matrix = confusion_matrix(gts, preds)
+                        test_acc_d, test_acc_r = matrix.diagonal()/matrix.sum(axis=1)
+                        
+                        print("Test Accuracy-D: {:.5f}".format(test_acc_d))
+                        print("Test Accuracy-R: {:.5f}".format(test_acc_r))
+                        print("\n")
 
+                        five_fold_test_acc.append(test_acc)
+                        five_fold_test_acc_d.append(test_acc_d)
+                        five_fold_test_acc_r.append(test_acc_r)
 
     print("Final Results")
     print("------------------------------------")
