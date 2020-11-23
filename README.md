@@ -62,7 +62,7 @@ We concatenate the final hidden states of the trained Bi-GRU (both directions) a
 
 The table of results for our machine learning models is shown below. We first state a non-machine learning baseline which follows the heuristic to always select the majority class label (D).
 
-![image](visual/model_image/table.PNG)
+![image](visual/model_image/table2.png)
 
 Note that the *TweetPredict + FF* model was used for the election prediction as the *GNNTweetPredict + FF* model was trained after the 3rd of November. The GNN model reported the strongest performance. As the data was imbalanced (69.2% Democratic tweets), the *TweetPredict* models reported stronger performance on the Democratic tweets; in the future, we may use a reweighting scheme to balance out the performance of the Democratic and Republican tweets so that the model is not biased towards either political party.
 
