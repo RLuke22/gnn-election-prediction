@@ -124,14 +124,14 @@ class ElectionResultsMap():
     def color_predicted_states(self):
         self.states[self.states['NAME']=='Arizona'].plot(ax=self.ax, color='tab:blue')
         self.states[self.states['NAME']=='Iowa'].plot(ax=self.ax, color='tab:red')
-        self.states[self.states['NAME']=='Florida'].plot(ax=self.ax, color='tab:blue')
-        self.states[self.states['NAME']=='Georgia'].plot(ax=self.ax, color='tab:red')
-        self.states[self.states['NAME']=='Ohio'].plot(ax=self.ax, color='tab:blue')
+        self.states[self.states['NAME']=='Florida'].plot(ax=self.ax, color='tab:red')
+        self.states[self.states['NAME']=='Georgia'].plot(ax=self.ax, color='tab:blue')
+        self.states[self.states['NAME']=='Ohio'].plot(ax=self.ax, color='tab:red')
         self.states[self.states['NAME']=='Texas'].plot(ax=self.ax, color='tab:red')
-        self.states[self.states['NAME']=='North Carolina'].plot(ax=self.ax, color='tab:blue')
+        self.states[self.states['NAME']=='North Carolina'].plot(ax=self.ax, color='tab:red')
         
     def show(self):        
-        plt.savefig('7_states_map.png')
+        plt.savefig('actual_map.png')
         plt.show()
 
 if __name__ == '__main__':
