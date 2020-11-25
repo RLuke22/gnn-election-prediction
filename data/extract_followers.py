@@ -14,8 +14,8 @@ class TwitterFollowerDataEngine():
         self.user = args.user 
         
         if self.user == 'lrowe':
-            self.consumer_key_Q = "JZNzXeOD8VMDCroiKFXsXwAdg"
-            self.consumer_secret_Q = "O58HHCidMQ8bogw4ofs8hr50V45aYxAG2i9vvqfZBFPXI3zKjM"
+            self.consumer_key_Q = "CONSUMER_KEY"
+            self.consumer_secret_Q = "SECRET_KEY"
 
             self.backup_file = '../../lrowe_followers.csv'
 
@@ -25,8 +25,8 @@ class TwitterFollowerDataEngine():
                 'NRA': 'R'
             }
         elif self.user == 'qyong':
-            self.consumer_key_Q = "DT3XJxLbG9gSAExLTnw8Ya8wy"
-            self.consumer_secret_Q = "9zhg6sRhqaBBgzYyBuoaohPH6WLpYEMWkg3S0koAhr50dfZQ1q"
+            self.consumer_key_Q = "CONSUMER_KEY"
+            self.consumer_secret_Q = "SECRET_KEY"
 
             self.backup_file = '../../qyong_followers.csv' 
 
